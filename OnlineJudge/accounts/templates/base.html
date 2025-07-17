@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}My Site{% endblock %}</title>
+    <style>
+        /* Global body styling */
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Floating white navbar with green logo and title */
+        .floating-navbar {
+            height: 40px;
+            background-color: white;
+            color: black;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            position: fixed;
+            top: 10px;
+            left: 5px;
+            right: 5px;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-family: 'Segoe UI', Roboto, Helvetica, sans-serif;
+            font-size: 14px;
+            z-index: 999;
+        }
+
+
+        .navbar-left {
+            font-weight: bold;
+            color: green;
+            font-size: 16px;
+        }
+
+        .navbar-center {
+            font-weight: 500;
+        }
+
+        /* Push content down below floating navbar */
+        .container {
+            margin: 100px auto 40px;
+            padding: 20px;
+            max-width: 600px;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Footer styling */
+        footer {
+            background-color: #222;
+            color: white;
+            padding: 12px;
+            text-align: center;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+
+        /* Links */
+        a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        /* Error messages */
+        .errorlist {
+            color: red;
+            margin-bottom: 10px;
+            list-style: none;
+            padding: 0;
+        }
+
+        /* Flash messages */
+        .message {
+            padding: 10px;
+            background: #dff0d8;
+            border: 1px solid #c3e6cb;
+            color: #3c763d;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+    </style>
+
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <header>
+        <div class="floating-navbar">
+            <div class="navbar-left">OJ</div>
+            <div class="navbar-center">Login to Use</div>
+        </div>
+    </header>
+
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+
+    <footer>
+        &copy; {{ year|default:"2025" }} MySite. All rights reserved.
+    </footer>
+</body>
+</html>

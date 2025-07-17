@@ -1,0 +1,42 @@
+{% extends 'base1.html' %}
+
+{% block title %}Home - Online Judge{% endblock %}
+
+{% block content %}
+<style>
+  .home-container {
+    width: 100%;
+    padding: 40px 60px;
+    background-color: white;
+    text-align: center;
+    /* Removed border-radius and box-shadow to blend with navbar */
+    margin: 0;
+  }
+  .welcome-container {
+    width: 100%;
+    padding: 40px 60px;
+    background-color: white;
+    text-align: center;
+   }
+  h1 {
+    margin-bottom: 10px;
+    color: #333;
+  }
+
+  p {
+    font-size: 16px;
+    color: #555;
+    margin-bottom: 30px;
+  }
+
+  /* .logout-btn removed as per your request */
+</style>
+
+<div class="home-container">
+  <div class="welcome-container">
+    <h1>Welcome, {{ request.user.username|default:"Guest" }}!</h1>
+    <p>Glad to have you here. Start solving problems or check your submissions.</p>
+  </div>
+
+</div>
+{% endblock %}

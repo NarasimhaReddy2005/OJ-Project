@@ -1,0 +1,67 @@
+<!-- navbar.html -->
+<style>
+  .navbar-custom {
+    background: linear-gradient(to right, #32CD32 0%, #32CD32 , white 100%);
+    border-radius: 20px;
+    padding: 10px 20px;
+    margin: 10px auto;
+    max-width: 97%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: white;
+    font-family: 'Segoe UI', sans-serif;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+  }
+
+
+  .nav-links {
+    display: flex;
+    gap: 20px;
+  }
+
+  .nav-link {
+    text-decoration: none;
+    color: white;
+    padding: 8px 14px;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+  }
+
+  .nav-link.active,
+  .nav-link:hover {
+    background-color: white;
+    color: #32CD32;
+  }
+
+  .profile-button {
+    text-decoration: none;
+    background-color: white;
+    color: #32CD32;
+    padding: 8px 14px;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+  }
+
+  .profile-button:hover {
+    background-color: #2fbf2f;
+    color: white;
+  }
+</style>
+
+<div class="navbar-custom">
+  <div class="nav-links">
+    <a href="/problems/" class="nav-link {% if request.path == '/problems/' %}active{% endif %}">Problems</a>
+    <a href="" class="nav-link {% if request.path == '/activity/' %}active{% endif %}">Your Activity</a>
+    <a href="" class="nav-link {% if request.path == '/profile/' %}active{% endif %}">Profile</a>
+  </div>
+
+  {% if request.user.is_authenticated %}
+    <a href="" class="profile-button">{{ request.user.username }}</a>
+  {% else %}
+    <a href="{% url 'login' %}" class="profile-button">Login</a>
+  {% endif %}
+</div>

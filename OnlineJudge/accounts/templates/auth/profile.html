@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block title %}Your Profile{% endblock %}
+
+{% block header %}Welcome, {{ request.user.username }}{% endblock %}
+
+{% block content %}
+    <p><strong>Username:</strong> {{ request.user.username }}</p>
+    <p><strong>Email:</strong> {{ request.user.email }}</p>
+    <p><strong>First name:</strong> {{ request.user.first_name }}</p>
+    <p><strong>Last name:</strong> {{ request.user.last_name }}</p>
+
+    <hr>
+
+    <p>
+        <a href="{% url 'change_password' %}">Change Password</a> |
+        <a href="{% url 'logout' %}">Logout</a>
+    </p>
+{% endblock %}
