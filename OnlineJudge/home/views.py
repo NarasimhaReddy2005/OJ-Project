@@ -3,7 +3,7 @@ from django.http import HttpResponse
 from django.template import loader
 from django.shortcuts import render
 from django.core.paginator import Paginator
-from .models import problem
+from problems.models import Problem
 
 
 # Create your views here.
@@ -12,24 +12,23 @@ def home(request):
 
 @login_required
 def problem_detail(request, problem_id):
-    req_problem = problem.objects.get(id=problem_id)
+    req_problem = Problem.objects.get(id=problem_id)
 
     context = {
         'problem': req_problem
     }
     template = loader.get_template('home/problem.html')
-    return HttpResponse(template.render(context, request));
-
-
-# Dummy data for now
-dummy_problems = [
-    {'title': f'Problem {i}', 'difficulty': 'Easy' if i % 3 == 0 else 'Medium' if i % 3 == 1 else 'Hard'}
-    for i in range(1, 101)  # 100 dummy problems
-]
+    return HttpResponse(template.render(context, request))
 
 def problems_list_view(request):
-    page_number = request.GET.get('page', 1)
-    paginator = Paginator(dummy_problems, 20)
+    query = request.GET.get('q')
+    all_problems = Problem.objects.all()
+
+    if query:
+        all_problems = all_problems.filter(problem_name__icontains=query)
+
+    paginator = Paginator(all_problems, 20)
+    page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
     template = loader.get_template('home/problems_list.html')

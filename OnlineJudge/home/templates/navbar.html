@@ -1,11 +1,11 @@
 <!-- navbar.html -->
 <style>
   .navbar-custom {
-    background: linear-gradient(to right, #32CD32 0%, #32CD32 , white 100%);
-    border-radius: 20px;
-    padding: 10px 20px;
-    margin: 10px auto;
-    max-width: 97%;
+    background: linear-gradient(to right, #1ecbe1 0%, #1ecbe1 , white 100%);
+    border-radius: 15px;
+    padding: 5px 5px;
+    margin: 5px auto;
+    max-width: 98%;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -34,13 +34,13 @@
   .nav-link.active,
   .nav-link:hover {
     background-color: white;
-    color: #32CD32;
+    color: #1ecbe1;
   }
 
   .profile-button {
     text-decoration: none;
     background-color: white;
-    color: #32CD32;
+    color: #1ecbe1;
     padding: 8px 14px;
     border-radius: 12px;
     transition: all 0.3s ease;
@@ -54,7 +54,7 @@
 
 <div class="navbar-custom">
   <div class="nav-links">
-    <a href="/problems/" class="nav-link {% if request.path == '/problems/' %}active{% endif %}">Problems</a>
+    <a href="/problems_list/" class="nav-link {% if request.path == '/problems/' %}active{% endif %}">Problems</a>
     <a href="" class="nav-link {% if request.path == '/activity/' %}active{% endif %}">Your Activity</a>
     <a href="" class="nav-link {% if request.path == '/profile/' %}active{% endif %}">Profile</a>
   </div>
