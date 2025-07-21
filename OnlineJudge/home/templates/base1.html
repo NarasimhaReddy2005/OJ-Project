@@ -1,17 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
     <title>{% block title %}Online Judge{% endblock %}</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
     {% include 'navbar.html' %}
 
-    <div class="container mt-4">
-        {% block content %}
-        <!-- Page-specific content goes here -->
-        {% endblock %}
+    <div class="container-fluid mt-1">
+      {% block content %}
+      <!-- Page-specific content goes here -->
+      {% endblock %}
     </div>
-</body>
+  </body>
 </html>

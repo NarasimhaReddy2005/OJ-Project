@@ -6,7 +6,7 @@
     gap: 20px;
     padding: 20px;
     margin: 0;
-    height: 90vh;
+    height: 93vh;
     box-sizing: border-box;
   }
 
@@ -32,6 +32,7 @@
     flex: 3;
     display: flex;
     flex-direction: column;
+    margin-bottom: 10px;
   }
 
   .editor-section textarea {
@@ -42,30 +43,9 @@
     font-size: 14px;
     border: 1px solid #ccc;
     border-radius: 8px;
+    height: 200px;
   }
 
-  .io-section {
-    flex: 2;
-    display: flex;
-    gap: 10px;
-    margin-top: 15px;
-  }
-
-  .io-box {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .io-text {
-    flex: 1;
-    padding: 10px;
-    font-family: monospace;
-    font-size: 13px;
-    resize: vertical;
-    border: 1px solid #b2b2b2;
-    border-radius: 6px;
-  }
   .editor-buttons {
     display: flex;
     justify-content: flex-end;
@@ -75,7 +55,7 @@
 
   .run-btn,
   .submit-btn {
-    padding: 4px 10px;
+    padding: 6px 14px;
     font-size: 14px;
     font-weight: 500;
     border-radius: 6px;
@@ -101,15 +81,42 @@
   .submit-btn:hover {
     background-color: #0865b3;
   }
+
+  .io-section-vertical {
+    flex: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .io-box {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .io-text {
+    flex: 1;
+    padding: 10px;
+    font-family: monospace;
+    font-size: 13px;
+    resize: vertical;
+    border: 1px solid #b2b2b2;
+    border-radius: 6px;
+    height: 120px;
+  }
 </style>
 
 <div class="problem-container">
   <div class="problem-left">
-    <!-- Problem Statement Section -->
     <h2>{{ problem.problem_name }}</h2>
-    <p><strong>Difficulty:</strong> {{ problem.get_difficulty_display }}</p>
+    <p>
+      <strong>Difficulty:</strong> {{ problem.get_problem_difficulty_display }}
+    </p>
+
     <h3>Statement</h3>
     <p>{{ problem.statement }}</p>
+
     <h3>Constraints</h3>
     <p>{{ problem.constraints }}</p>
   </div>
@@ -117,23 +124,32 @@
   <div class="problem-right">
     <!-- Code Editor -->
     <div class="editor-section">
-      <h3><span style="color: rgb(62, 191, 2)">&lt;/&gt;</span>Code</h3>
-      <textarea placeholder="Write your solution here..."></textarea>
+      <h4><span style="color: rgb(62, 191, 2)">&lt;/&gt;</span> Code</h4>
+      <textarea
+        id="codeArea"
+        placeholder="Write your solution here..."
+      ></textarea>
+
       <div class="editor-buttons">
-        <button class="run-btn">Run</button>
+        <button class="run-btn" id="runBtn">Run</button>
         <button class="submit-btn">Submit</button>
       </div>
     </div>
 
-    <!-- Input/Output stacked vertically -->
+    <!-- Input/Output -->
     <div class="io-section-vertical">
       <div class="io-box">
         <h4>Input</h4>
-        <textarea placeholder="Your input..." class="io-text"></textarea>
+        <textarea
+          id="inputArea"
+          placeholder="Your input..."
+          class="io-text"
+        ></textarea>
       </div>
       <div class="io-box">
         <h4>Output</h4>
         <textarea
+          id="outputArea"
           placeholder="Your output..."
           class="io-text"
           readonly
@@ -142,4 +158,40 @@
     </div>
   </div>
 </div>
+
+<script>
+  document.getElementById("runBtn").addEventListener("click", () => {
+    const code = document.getElementById("codeArea").value;
+    const input = document.getElementById("inputArea").value;
+    const language = "cpp"; // explicitly specify C++
+
+    fetch("/submission/run/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": getCookie("csrftoken"),
+      },
+      body: JSON.stringify({ code, input, language }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        document.getElementById("outputArea").value = data.output || data.error;
+      });
+
+    function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== "") {
+        const cookies = document.cookie.split(";");
+        for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i].trim();
+          if (cookie.startsWith(name + "=")) {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+          }
+        }
+      }
+      return cookieValue;
+    }
+  });
+</script>
 {% endblock %}
