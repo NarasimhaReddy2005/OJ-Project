@@ -1,114 +1,170 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>{% block title %}My Site{% endblock %}</title>
+  <head>
+    <meta charset="UTF-8" />
+    <title>{% block title %}Online Judge{% endblock %}</title>
+
+    {% load static %}
+
+    <!-- Global Styles -->
     <style>
-        /* Global body styling */
-        body {
-            font-family: 'Segoe UI', Roboto, Helvetica, sans-serif;
-            background-color: #f9f9f9;
-            margin: 0;
-            padding: 0;
-        }
+      :root {
+        --bg-color: #f9f9f9;
+        --text-color: #111;
+        --card-bg: white;
+        --nav-bg: white;
+        --nav-text: black;
+        --primary: #00b894;
+        --shadow: rgba(0, 0, 0, 0.1);
+      }
 
-        /* Floating white navbar with green logo and title */
-        .floating-navbar {
-            height: 40px;
-            background-color: white;
-            color: black;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-            position: fixed;
-            top: 10px;
-            left: 5px;
-            right: 5px;
-            padding: 0 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            font-family: 'Segoe UI', Roboto, Helvetica, sans-serif;
-            font-size: 14px;
-            z-index: 999;
-        }
+      body {
+        font-family: "Segoe UI", Roboto, Helvetica, sans-serif;
+        background-color: var(--bg-color);
+        color: var(--text-color);
+        margin: 0;
+        padding: 0;
+      }
 
+      .floating-navbar {
+        height: 45px;
+        background-color: var(--nav-bg);
+        color: var(--nav-text);
+        border-radius: 12px;
+        box-shadow: 0 4px 12px var(--shadow);
+        position: fixed;
+        top: 10px;
+        left: 10px;
+        right: 10px;
+        padding: 0 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        z-index: 999;
+      }
 
-        .navbar-left {
-            font-weight: bold;
-            color: green;
-            font-size: 16px;
-        }
+      .navbar-left {
+        font-weight: bold;
+        color: var(--primary);
+        font-size: 18px;
+      }
 
-        .navbar-center {
-            font-weight: 500;
-        }
+      .navbar-center {
+        font-weight: 500;
+        font-size: 15px;
+      }
 
-        /* Push content down below floating navbar */
-        .container {
-            margin: 100px auto 40px;
-            padding: 20px;
-            max-width: 600px;
-            background-color: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        }
+      .container {
+        margin: 100px auto 40px;
+        padding: 20px;
+        max-width: 600px;
+        background-color: var(--card-bg);
+        border-radius: 12px;
+        box-shadow: 0 4px 10px var(--shadow);
+      }
 
-        /* Footer styling */
-        footer {
-            background-color: #222;
-            color: white;
-            padding: 12px;
-            text-align: center;
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-        }
+      a {
+        color: #0984e3;
+        text-decoration: none;
+      }
 
-        /* Links */
-        a {
-            color: #007bff;
-            text-decoration: none;
-        }
+      a:hover {
+        text-decoration: underline;
+      }
 
-        a:hover {
-            text-decoration: underline;
-        }
+      .errorlist {
+        color: red;
+        margin-bottom: 10px;
+        list-style: none;
+        padding: 0;
+      }
 
-        /* Error messages */
-        .errorlist {
-            color: red;
-            margin-bottom: 10px;
-            list-style: none;
-            padding: 0;
-        }
+      .message {
+        padding: 10px;
+        background: #dff0d8;
+        border: 1px solid #c3e6cb;
+        color: #3c763d;
+        border-radius: 5px;
+        margin-bottom: 15px;
+      }
+      /* Primary Button */
+      .btn-primary {
+        background-color: #00b8b8;
+        color: #fff;
+        border: none;
+        padding: 10px 16px;
+        border-radius: 6px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background-color 0.2s ease-in-out, transform 0.1s ease;
+      }
 
-        /* Flash messages */
-        .message {
-            padding: 10px;
-            background: #dff0d8;
-            border: 1px solid #c3e6cb;
-            color: #3c763d;
-            border-radius: 5px;
-            margin-bottom: 15px;
-        }
+      .btn-primary:hover {
+        background-color: #019898;
+        transform: scale(1.03);
+      }
+
+      /* Secondary Button */
+      .btn-secondary {
+        background-color: #2d3436;
+        color: #fff;
+        border: none;
+        padding: 10px 16px;
+        border-radius: 6px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background-color 0.2s ease-in-out, transform 0.1s ease;
+      }
+
+      .btn-secondary:hover {
+        background-color: #636e72;
+        transform: scale(1.03);
+      }
+      input[type="text"],
+      input[type="email"],
+      input[type="password"],
+      textarea {
+        width: 95%;
+        padding: 10px 14px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        background-color: #ffffff;
+        color: #000000;
+        font-size: 14px;
+        outline: none;
+        transition: border-color 0.2s ease;
+      }
+
+      input[type="text"]:focus,
+      input[type="email"]:focus,
+      input[type="password"]:focus,
+      textarea:focus {
+        border-color: #00cec9;
+        box-shadow: 0 0 4px #00cec944;
+      }
+      a {
+        color: #00cec9;
+        text-decoration: none;
+        transition: color 0.2s ease;
+      }
+
+      a:hover {
+        color: #81ecec;
+        text-decoration: underline;
+      }
     </style>
 
     {% block extra_head %}{% endblock %}
-</head>
-<body>
+  </head>
+
+  <body>
     <header>
-        <div class="floating-navbar">
-            <div class="navbar-left">OJ</div>
-            <div class="navbar-center">Login to Use</div>
-        </div>
+      <div class="floating-navbar">
+        <div class="navbar-left">OJ</div>
+        <div class="navbar-center">Login to Use</div>
+      </div>
     </header>
 
-    <div class="container">
-        {% block content %}{% endblock %}
-    </div>
-
-    <footer>
-        &copy; {{ year|default:"2025" }} MySite. All rights reserved.
-    </footer>
-</body>
+    <div class="container">{% block content %}{% endblock %}</div>
+  </body>
 </html>

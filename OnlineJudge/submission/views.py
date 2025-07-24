@@ -5,54 +5,116 @@ import json
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
+LANGUAGE_HANDLERS = {
+    'cpp': {
+        'source_ext': '.cpp',
+        'compile_cmd': lambda src, exe: ['g++', src, '-o', exe],
+        'run_cmd': lambda exe: [exe],
+        'run_dir': None,
+        'env': None,
+    },
+    'python': {
+        'source_ext': '.py',
+        'compile_cmd': None,
+        'run_cmd': lambda src: ['python3', src],
+        'run_dir': None,
+        'env': None,
+    },
+    'java': {
+        'source_ext': '.java',
+        'compile_cmd': lambda src, _: ['javac', src],
+        'run_cmd': lambda _: ['java', 'Main'],
+        'run_dir': lambda src: os.path.dirname(src),
+        'env': None,
+    }
+}
+
 @csrf_exempt
 def run(request):
-    if request.method == 'POST':
-        try:
-            data = json.loads(request.body)
-            code = data.get('code', '')
-            user_input = data.get('input', '')
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Invalid request method'}, status=400)
 
-            # Save C++ code to a temporary .cpp file
-            with tempfile.NamedTemporaryFile(suffix=".cpp", delete=False) as source_file:
-                source_file.write(code.encode())
-                source_file_path = source_file.name
+    try:
+        data = json.loads(request.body)
+        code = data.get('code', '')
+        user_input = data.get('input', '')
+        language = data.get('language', 'cpp')
 
-            # Compile the code
-            executable_path = source_file_path.replace(".cpp", "")
+        handler = LANGUAGE_HANDLERS.get(language)
+        if not handler:
+            return JsonResponse({'error': f'Language "{language}" not supported.'}, status=400)
+
+        source_ext = handler['source_ext']
+
+        # For Java, always create a file named Main.java
+        if language == 'java':
+            temp_dir = tempfile.mkdtemp()
+            source_path = os.path.join(temp_dir, 'Main.java')
+            with open(source_path, 'w', encoding='utf-8') as source_file:
+                source_file.write(code)
+        else:
+            temp_file = tempfile.NamedTemporaryFile(suffix=source_ext, delete=False, mode='w', encoding='utf-8')
+            source_path = temp_file.name
+            temp_file.write(code)
+            temp_file.close()
+
+        if handler['compile_cmd']:
+            executable_path = source_path.replace(source_ext, '')
+            if os.name == 'nt' and language == 'cpp':
+                executable_path += '.exe'
+        else:
+            executable_path = source_path
+
+        # Compile
+        if handler['compile_cmd']:
+            compile_cmd = handler['compile_cmd'](source_path, executable_path)
             compile_process = subprocess.run(
-                ['g++', source_file_path, '-o', executable_path],
+                compile_cmd,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 timeout=10
             )
-
             if compile_process.returncode != 0:
-                return JsonResponse({'error': compile_process.stderr.decode()})
+                return JsonResponse({'error': compile_process.stderr.decode()}, status=400)
 
-            # Run the compiled executable
-            run_process = subprocess.run(
-                [executable_path],
-                input=user_input.encode(),
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                timeout=5
-            )
+        # Run
+        run_cmd = handler['run_cmd'](executable_path)
+        cwd = handler['run_dir'](source_path) if handler.get('run_dir') else None
+        env = handler.get('env')
 
-            output = run_process.stdout.decode()
-            error = run_process.stderr.decode()
+        run_process = subprocess.run(
+            run_cmd,
+            input=user_input.encode(),
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            timeout=5,
+            cwd=cwd,
+            env=env
+        )
 
-            return JsonResponse({'output': output if output else error})
+        output = run_process.stdout.decode().strip()
+        error = run_process.stderr.decode().strip()
 
-        except subprocess.TimeoutExpired:
-            return JsonResponse({'error': 'Execution timed out'})
-        except Exception as e:
-            return JsonResponse({'error': str(e)})
-        finally:
-            # Cleanup files
-            if os.path.exists(source_file_path):
-                os.remove(source_file_path)
-            if os.path.exists(executable_path):
-                os.remove(executable_path)
+        return JsonResponse({'output': output if output else error or 'No output'})
 
-    return JsonResponse({'error': 'Invalid request method'}, status=400)
+    except subprocess.TimeoutExpired:
+        return JsonResponse({'error': 'Execution timed out'}, status=408)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+    finally:
+        try:
+            # Clean up
+            if language == 'java':
+                if os.path.exists(source_path):
+                    os.remove(source_path)
+                class_file = os.path.join(os.path.dirname(source_path), 'Main.class')
+                if os.path.exists(class_file):
+                    os.remove(class_file)
+                os.rmdir(os.path.dirname(source_path))
+            else:
+                if os.path.exists(source_path):
+                    os.remove(source_path)
+                if os.path.exists(executable_path) and executable_path != source_path:
+                    os.remove(executable_path)
+        except Exception:
+            pass

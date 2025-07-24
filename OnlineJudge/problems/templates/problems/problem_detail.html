@@ -1,111 +1,5 @@
-{% extends 'base1.html' %} {% block content %}
-<style>
-  .problem-container {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-    padding: 20px;
-    margin: 0;
-    height: 93vh;
-    box-sizing: border-box;
-  }
-
-  .problem-left {
-    padding: 20px;
-    background-color: white;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    overflow-y: auto;
-  }
-
-  .problem-right {
-    display: flex;
-    flex-direction: column;
-    background-color: #def9f8;
-    border-radius: 12px;
-    padding: 20px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    height: 100%;
-  }
-
-  .editor-section {
-    flex: 3;
-    display: flex;
-    flex-direction: column;
-    margin-bottom: 10px;
-  }
-
-  .editor-section textarea {
-    flex: 1;
-    resize: none;
-    padding: 10px;
-    font-family: monospace;
-    font-size: 14px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    height: 200px;
-  }
-
-  .editor-buttons {
-    display: flex;
-    justify-content: flex-end;
-    gap: 9px;
-    margin-top: 5px;
-  }
-
-  .run-btn,
-  .submit-btn {
-    padding: 6px 14px;
-    font-size: 14px;
-    font-weight: 500;
-    border-radius: 6px;
-    border: none;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-  }
-
-  .run-btn {
-    background-color: #00b894; /* teal green */
-    color: white;
-  }
-
-  .run-btn:hover {
-    background-color: #019874;
-  }
-
-  .submit-btn {
-    background-color: #0984e3; /* blue */
-    color: white;
-  }
-
-  .submit-btn:hover {
-    background-color: #0865b3;
-  }
-
-  .io-section-vertical {
-    flex: 2;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .io-box {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .io-text {
-    flex: 1;
-    padding: 10px;
-    font-family: monospace;
-    font-size: 13px;
-    resize: vertical;
-    border: 1px solid #b2b2b2;
-    border-radius: 6px;
-    height: 120px;
-  }
-</style>
+{% extends 'base1.html' %} {% block content %} {% load static %}
+<link rel="stylesheet" href="{% static 'problems/css/problem_detail.css' %}" />
 
 <div class="problem-container">
   <div class="problem-left">
@@ -124,7 +18,25 @@
   <div class="problem-right">
     <!-- Code Editor -->
     <div class="editor-section">
-      <h4><span style="color: rgb(62, 191, 2)">&lt;/&gt;</span> Code</h4>
+      <div
+        style="
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        "
+      >
+        <h4><span style="color: rgb(62, 191, 2)">&lt;/&gt;</span> Code</h4>
+        <select
+          id="languageSelect"
+          style="margin-bottom: 10px; width: 150px; padding: 5px"
+        >
+          <option value="cpp">C++</option>
+          <option value="python">Python</option>
+          <option value="java">Java</option>
+        </select>
+      </div>
+
+      <!-- THE EDITOR -->
       <textarea
         id="codeArea"
         placeholder="Write your solution here..."
@@ -159,39 +71,5 @@
   </div>
 </div>
 
-<script>
-  document.getElementById("runBtn").addEventListener("click", () => {
-    const code = document.getElementById("codeArea").value;
-    const input = document.getElementById("inputArea").value;
-    const language = "cpp"; // explicitly specify C++
-
-    fetch("/submission/run/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-CSRFToken": getCookie("csrftoken"),
-      },
-      body: JSON.stringify({ code, input, language }),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        document.getElementById("outputArea").value = data.output || data.error;
-      });
-
-    function getCookie(name) {
-      let cookieValue = null;
-      if (document.cookie && document.cookie !== "") {
-        const cookies = document.cookie.split(";");
-        for (let i = 0; i < cookies.length; i++) {
-          const cookie = cookies[i].trim();
-          if (cookie.startsWith(name + "=")) {
-            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-            break;
-          }
-        }
-      }
-      return cookieValue;
-    }
-  });
-</script>
+<script src="{%static 'problems/js/editor.js' %}"></script>
 {% endblock %}

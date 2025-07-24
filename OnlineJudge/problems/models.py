@@ -1,6 +1,6 @@
 from django.db import models
-
-
+from django.conf import settings
+import os
 
 # Create your models here.
 class Problem(models.Model):
@@ -20,5 +20,13 @@ class Problem(models.Model):
     statement = models.TextField(max_length=3000)
     constraints = models.TextField(max_length=500)
 
+class TestCaseBundle(models.Model):
+    problem = models.OneToOneField(Problem, on_delete=models.CASCADE, related_name='testcase_bundle')
+    testcases_dir = models.CharField(max_length=255, help_text="Relative to MEDIA_ROOT/testcases/")
+
+    def get_full_path(self):
+        return os.path.join(settings.MEDIA_ROOT, 'testcases', self.testcases_dir)
+
     def __str__(self):
-        return self.problem_name
+        return f"Test cases for {self.problem.problem_name}"
+    
