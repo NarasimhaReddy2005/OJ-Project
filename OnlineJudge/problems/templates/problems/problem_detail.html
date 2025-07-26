@@ -44,7 +44,7 @@
 
       <div class="editor-buttons">
         <button class="run-btn" id="runBtn">Run</button>
-        <button class="submit-btn">Submit</button>
+        <button class="submit-btn" id="submitBtn">Submit</button>
       </div>
     </div>
 
@@ -70,6 +70,8 @@
     </div>
   </div>
 </div>
-
+<script>
+  window.problemId = {{ problem.id }}; 
+</script>
 <script src="{%static 'problems/js/editor.js' %}"></script>
 {% endblock %}

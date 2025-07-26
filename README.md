@@ -175,6 +175,20 @@ def run(request):
 
 ```
 
+Django adds CSRF protection to POST requests for security.
+
+If you want to allow code to be submitted via frontend JavaScript (AJAX) without CSRF tokens (like in your /run/), you decorate it with:
+
+```python
+from django.views.decorators.csrf import csrf_exempt
+@csrf_exempt
+def run(request):
+    ...
+```
+
+✅ Use only for trusted endpoints (e.g., internal APIs or testing).
+❌ Don't expose to public-facing unauthenticated users without protection.
+
 That's it, now you can run C++ code directly from the problem detail page in your Django application. The output will be displayed in the output area after clicking the "Run" button.
 
 Make sure to update urls.py to include the new view.
@@ -710,3 +724,183 @@ Then saves the inline TestCaseBundle, passing the newly saved problem as a forei
 
 This means:<br>
 ✅ By the time TestCaseBundle.save() is called, self.problem.id is already set, and your code works as expected.
+
+class `TestCaseBundleInline(admin.StackedInline)`:<br>
+Tells Django:<br>
+“Whenever you open a Problem in the admin panel, also allow editing its associated TestCaseBundle in the same form page.”
+
+StackedInline → makes the layout vertical (stacked).
+There's also TabularInline for horizontal row-style layout.
+
+# Submission
+
+Creating a CodeSubmission model
+
+```python
+class CodeSubmission(models.Model):
+    LANGUAGES = [
+        ('cpp', 'C++'),
+        ('py', 'Python'),
+        ('java', 'Java'),
+    ]
+
+    problem = models.ForeignKey(Problem, on_delete=models.CASCADE, related_name='submissions')
+    code = models.TextField()
+    language = models.CharField(max_length=10, choices=LANGUAGES)
+    submitted_at = models.DateTimeField(auto_now_add=True)
+    verdict = models.CharField(max_length=20, blank=True, null=True)
+    output = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.problem.problem_name} - {self.language} - {self.verdict}"
+```
+
+Before we can implement it lets extract reusable code from run function to execute code and return results into utils.py.
+
+Then lets create a submission view to handle code submissions.
+
+```python
+def submit_code(request, problem_id):
+    if request.method == 'POST':
+        problem = get_object_or_404(Problem, id=problem_id)
+        code = request.POST.get('code')
+        language = request.POST.get('language')
+
+        # Save the submission
+        submission = CodeSubmission.objects.create(
+            problem=problem,
+            code=code,
+            language=language
+        )
+
+        # Run and test
+        verdict, output = run_code_and_check(code, language, problem.testcase_bundle.get_full_path())
+
+        # Save results
+        submission.verdict = verdict
+        submission.output = output
+        submission.save()
+
+        return JsonResponse({
+            'verdict': verdict,
+            'output': output
+        })
+
+    return JsonResponse({'error': 'Only POST allowed'}, status=405)
+```
+
+run_code_and_check function in utils.py
+
+First we sort both input and output directories so we can compare them easily.
+We execute every output to given output of corresponding input file.
+Whenever we get an error, we return the error status from that testcase.
+
+```python
+def run_code_and_check(code, language, testcase_dir):
+    input_dir = os.path.join(testcase_dir, "input")
+    output_dir = os.path.join(testcase_dir, "output")
+
+    input_files = sorted(os.listdir(input_dir))
+
+    for filename in input_files:
+        input_path = os.path.join(input_dir, filename)
+        output_path = os.path.join(output_dir, filename)
+
+        with open(input_path, 'r') as f:
+            test_input = f.read()
+        with open(output_path, 'r') as f:
+            expected_output = f.read().strip()
+
+        actual_output, status = execute_code(code, language, test_input)
+
+        if status != 'success':
+            return status.upper(), actual_output  # TIMEOUT, ERROR, etc.
+
+        if actual_output.strip() != expected_output:
+            return 'Wrong Answer', actual_output
+
+    return 'Accepted', 'All test cases passed'
+```
+
+## Migration behaviour
+
+Skip to `Resetting the Database` section if you are starting fresh.
+
+When you add a new model or change an existing one, Django needs to create or update the database schema accordingly. This is done through migrations.
+
+```bash
+python manage.py makemigrations
+
+WARNINGS:
+?: (staticfiles.W004) The directory 'C:\Users\laksh\PycharmProjects\OJ\OnlineJudge\static' in the STATICFILES_DIRS setting does not exist.
+Was codesubmission.input_data renamed to codesubmission.output (a TextField)? [y/N] N
+Was codesubmission.output_data renamed to codesubmission.output (a TextField)? [y/N] N
+Was codesubmission.timestamp renamed to codesubmission.submitted_at (a DateTimeField)? [y/N] N
+It is impossible to add a non-nullable field 'problem' to codesubmission without specifying a default. This is because the database needs something to populate existing rows.
+Please select a fix:
+ 1) Provide a one-off default now (will be set on all existing rows with a null value for this column)
+ 2) Quit and manually define a default value in models.py.
+Select an option: 1
+Please enter the default value as valid Python.
+The datetime and django.utils.timezone modules are available, so it is possible to provide e.g. timezone.now as a value.
+Type 'exit' to exit this prompt
+>>> 1
+It is impossible to add the field 'submitted_at' with 'auto_now_add=True' to codesubmission without providing a default. This is because the database needs something to populate existing rows.
+ 1) Provide a one-off default now which will be set on all existing rows
+ 2) Quit and manually define a default value in models.py.
+Select an option: 1
+Please enter the default value as valid Python.
+Accept the default 'timezone.now' by pressing 'Enter' or provide another value.
+The datetime and django.utils.timezone modules are available, so it is possible to provide e.g. timezone.now as a value.
+Type 'exit' to exit this prompt
+[default: timezone.now] >>> timezone.now
+Migrations for 'submission':
+  submission\migrations\0002_remove_codesubmission_input_data_and_more.py
+    - Remove field input_data from codesubmission
+    - Remove field output_data from codesubmission
+    - Remove field timestamp from codesubmission
+    + Add field output to codesubmission
+    + Add field problem to codesubmission
+    + Add field submitted_at to codesubmission
+    + Add field verdict to codesubmission
+    ~ Alter field language on codesubmission
+(.venv) PS C:\Users\laksh\PycharmProjects\OJ\OnlineJudge> python3 manage.py migrate
+
+```
+
+Since you're adding non-nullable fields (problem, submitted_at), Django asks:
+
+“What should be the default value for rows that already exist in the database?”
+
+This is standard behavior to avoid breaking existing rows.
+
+You got messages like:
+
+It is impossible to add a non-nullable field 'problem' without specifying a default.
+
+Even though you said it’s the first time you're implementing submission, Django still checks if the database table already exists, and if it does (perhaps from earlier test runs), it assumes existing rows may exist.
+
+### Resetting the Database
+
+Before problems don't have testcases attached, so we simply flush them (getting rid of them) and create migrations freshly. Now we can simply avoid all the above handling.
+
+```bash
+python manage.py flush
+```
+
+- This will delete all data in the database and reset it to a clean state.
+- Remove old testcase directorys
+- Create users and super users, add problems with testcases.
+
+### BUG
+Same testcase dir is used by all problems.
+On 2 hrs of tracking down, I found that the problem is within problem_detail.html where we are setting the problem_id editor.js which is using `window.problemId` that was not at all set in problem_detail.html.
+
+So on adding this to problem_detail.html, it will set the `window.problemId` variable to the current problem's ID and !PROBLEMO SOLVED!.
+``` html
+<script>
+  window.problemId = {{ problem.id }}; 
+</script>
+```
+
+
