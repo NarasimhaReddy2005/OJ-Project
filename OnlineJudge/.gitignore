@@ -1,0 +1,39 @@
+# Python bytecode
+__pycache__/
+*.py[cod]
+*.so
+
+# Django stuff:
+*.sqlite3
+db.sqlite3
+media/
+media/*
+
+# Uploaded files
+testcase_zips/
+testcase_zips/*
+
+# Ignore testcases folder and its contents
+testcases/
+
+# Django migration files (optional during development)
+**/migrations/
+!**/migrations/__init__.py
+
+# Environments
+env/
+venv/
+.venv/
+ENV/
+
+# Secrets
+.env
+*.env
+
+# VS Code / PyCharm
+.vscode/
+.idea/
+
+# System files
+.DS_Store
+Thumbs.db

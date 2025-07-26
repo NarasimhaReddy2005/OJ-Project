@@ -18,6 +18,27 @@ def register_view(request):
     return render(request, 'auth/register.html', {'form': form})
 ```
 
+# Problems
+
+```python
+class Problem(models.Model):
+    DIFFICULTY_CHOICES = [
+        (1, 'Easy'),
+        (2, 'Medium'),
+        (3, 'Hard'),
+    ]
+
+    problem_name = models.CharField(max_length=100)
+    problem_difficulty = models.IntegerField(choices=DIFFICULTY_CHOICES)
+    statement = models.TextField(max_length=3000)
+    constraints = models.TextField(max_length=500)
+```
+
+If your model define like this then Django automatically adds this method: <br>
+`problem.get_problem_difficulty_display()` <br>
+And in templates, you just do:<br>
+`{{problem.get_problem_difficulty_display}}`
+
 # Editor
 
 ## Adding compilation feature in problems_detail.html or simply RUN function
@@ -423,3 +444,269 @@ Also for code use `const code = myCodeMirror.getValue();` instead of `document.g
 Create a new model for TestCase in `models.py` to store the test cases for each problem. This will allow us to manage test cases separately and associate them with specific problems.
 
 For this we are going to use a very practical and scalable idea, and widely used in real-world online judges (like Codeforces, AtCoder, etc.). Which is to store test cases as files (e.g., input1.txt, output1.txt) instead of as database entries.
+
+```python
+class TestCaseBundle(models.Model):
+    problem = models.OneToOneField(Problem, on_delete=models.CASCADE, related_name='testcase_bundle')
+    testcases_dir = models.CharField(max_length=255, help_text="Relative to MEDIA_ROOT/testcases/")
+    zip_file = models.FileField(upload_to='testcase_zips/', null=True, blank=True)
+
+    def get_full_path(self):
+        return os.path.join(settings.MEDIA_ROOT, 'testcases', self.testcases_dir)
+
+    def __str__(self):
+        return f"Test cases for {self.problem.problem_name}"
+```
+
+`problem = models.OneToOneField(...)`: This creates a one-to-one relationship with the Problem model.<br>
+Meaning: Each problem can have only one test case bundle.
+
+`on_delete=models.CASCADE` means: If the problem is deleted, its test case bundle is also deleted.
+
+`related_name='testcase_bundle'` means:<br>
+From the Problem instance, you can access its test cases like:
+
+```python
+  problem.testcase_bundle
+```
+
+`testcases_dir = models.CharField(...)`:
+This field stores the relative path (from `MEDIA_ROOT/testcases/`) to the directory where the test case files are extracted.
+
+`MEDIA_ROOT` is a Django settings variable that defines the absolute filesystem path where uploaded user files (like images, PDFs, etc.) will be stored.
+
+For example:<br>
+If `testcases_dir = "problem_1"`, then test cases are expected at:
+`MEDIA_ROOT/testcases/problem_1/`
+
+Method: `get_full_path(self)`
+
+```python
+def get_full_path(self):
+    return os.path.join(settings.MEDIA_ROOT, 'testcases', self.testcases_dir)
+```
+
+This method returns the absolute filesystem path to the directory that contains the test cases.
+
+Example: `/home/user/myproject/media/testcases/problem_1/`
+
+```python
+zip_file = models.FileField(upload_to='testcase_zips/', null=True, blank=True)
+```
+
+`FileField` Tells: Django this field will store a file (like .zip).<br>
+`upload_to='testcase_zips/'`: Files will be saved under MEDIA_ROOT/testcase_zips/.<br>
+`null=True`: The database column can be empty (i.e., no ZIP file uploaded yet).<br>
+`blank=True`: Allows leaving this field blank in Django Admin or forms.
+
+This line adds a field to your TestCaseBundle model that allows uploading a ZIP file containing your test case files (.in and .out pairs).
+
+### What Are Signals in Django?
+
+Django signals are a way for certain senders (like model instances) to notify receivers (your custom functions) that something happened.
+
+They follow the Observer pattern — where you observe an event (like saving a model) and run custom logic when that event occurs.
+
+Here we will use signals to automatically extract test cases from a ZIP file when a TestCaseBundle is created or updated.
+
+```python
+def extract_zip_to_dir(zip_path, dest_dir):
+    os.makedirs(dest_dir, exist_ok=True)
+    with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+        for name in zip_ref.namelist():
+            if '..' in name or name.startswith('/'):
+                raise ValueError("Unsafe file path detected in ZIP")
+        zip_ref.extractall(dest_dir)
+
+@receiver(post_save, sender=TestCaseBundle)
+def auto_extract_zip(sender, instance, **kwargs):
+    if instance.zip_file:
+        extract_path = instance.get_full_path()
+        extract_zip_to_dir(instance.zip_file.path, extract_path)
+```
+
+This code defines a function `extract_zip_to_dir` that extracts files from a ZIP archive to a specified directory. It checks for unsafe file paths to prevent directory traversal attacks.
+
+`sender`: The model class that triggered the signal (TestCaseBundle)
+`instance`: The specific object (record) that was just saved.
+
+Every thing seems fine, but what if admin unknowingly adds a ZIP containing unsafe paths or invalid files, no matching inputs and outputs, etc.?
+
+To handle this, we can add validation logic in the `extract_zip_to_dir` function to ensure that the ZIP file contains only valid test case files and does not contain any unsafe paths.
+
+```python
+def validate_testcase_zip(zip_path):
+    with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+        # lists all file paths
+        file_list = [f for f in zip_ref.namelist() if not f.endswith('/')]
+
+        # Detect root prefix (like powerProblemTestcases/) (not zipfile name)
+        common_prefix = os.path.commonprefix(file_list)
+        if '/' in common_prefix:
+            root_folder = common_prefix.split('/')[0]
+        else:
+            root_folder = ""
+
+        # Normalize file paths to ignore root folder
+        normalized_files = [
+            '/'.join(f.split('/')[1:]) if f.startswith(root_folder + '/') else f
+            for f in file_list
+        ]
+
+        inputs = set()
+        outputs = set()
+
+        for file in normalized_files:
+            if not (file.startswith("input/") or file.startswith("output/")):
+                raise ValidationError("All files must be inside 'input/' or 'output/' folders.")
+            if not file.endswith(".txt"):
+                raise ValidationError("Only .txt files allowed in input/output folders.")
+
+            basename = os.path.basename(file)
+            if file.startswith("input/"):
+                inputs.add(basename)
+            elif file.startswith("output/"):
+                outputs.add(basename)
+
+        if inputs != outputs:
+            missing_inputs = outputs - inputs
+            missing_outputs = inputs - outputs
+            raise ValidationError(
+                f"Mismatched test cases:\n"
+                f"{'Missing input(s): ' + ', '.join(missing_inputs) if missing_inputs else ''} "
+                f"{'Missing output(s): ' + ', '.join(missing_outputs) if missing_outputs else ''}"
+            )
+
+```
+
+This function checks the following: (this is how zip is extracted in windows)
+
+```lua
+testcases.zip
+  testcases/
+  ├── input/
+  │   ├── 1.txt
+  │   ├── 2.txt
+  │   └── 3.txt
+  ├── output/
+  │   ├── 1.txt
+  │   ├── 2.txt
+  │   └── 3.txt
+```
+
+for each f, we split and take form index 1 of file's path and join them eleminating starting.
+
+```python
+normalized_files = [
+            '/'.join(f.split('/')[1:]) if f.startswith(root_folder + '/') else f
+            for f in file_list
+        ]
+```
+
+This can be then easily used to check starts with "input/" or "output/".
+
+Django expects:<br>
+ValidationError → ❌ Fail validation<br>
+Anything else (i.e., no exception) → ✅ Valid
+
+IN testcase model we add this
+
+```python
+    def save(self, *args, **kwargs):
+        # Auto-generate testcases_dir if not set
+        if not self.testcases_dir:
+            self.testcases_dir = f'problem_{self.problem.id or "new"}'
+
+        # Rename the uploaded zip file based on problem
+        if self.zip_file and hasattr(self.zip_file, 'name'):
+            base, ext = os.path.splitext(self.zip_file.name)
+            slug = slugify(self.problem.problem_name)
+            new_name = f"{slug}_{self.problem.id or 'new'}{ext}"
+            self.zip_file.name = f"testcase_zips/{new_name}"
+
+        super().save(*args, **kwargs)
+```
+
+#### Example:
+
+Say you're uploading a zip for:<br>
+Problem ID: 7<br>
+Problem Name: "Power of a Number"
+
+Then: testcases_dir = "problem_7" will be automatically filled
+
+Your extracted testcases will be stored in:
+`MEDIA_ROOT/testcases/problem_7/`<br>
+This helps uniquely identify test cases per problem in the file system and avoids name clashes.
+
+#### Example2
+
+ugly_name_with_spaces_and_numbers123.zip
+
+But the problem name is:
+"Power of a Number"
+
+And the problem ID is 7
+
+Then this line:<br>
+slug = slugify(self.problem.problem_name) # → "power-of-a-number"
+
+And finally:<br>
+`self.zip_file.name = f"testcase_zips/{slug}_{self.problem.id}{ext}"`<br>
+Gives: `testcase_zips/power-of-a-number_7.zip`
+
+Again to make it automatically generates file name without raising `name needed` error add `blank=True` to the testcases_dir field in the TestCaseBundle model:
+
+```python
+testcases_dir = models.CharField(max_length=255, blank=True, help_text="Relative to MEDIA_ROOT/testcases/")
+```
+
+## Extraction
+
+```python
+def extract_zip_to_dir(zip_path, dest_dir):
+    validate_testcase_zip(zip_path)
+    os.makedirs(dest_dir, exist_ok=True)
+
+    with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+        file_list = [f for f in zip_ref.namelist() if not f.endswith('/')]
+
+        # Detect and remove top-level folder if exists
+        common_prefix = os.path.commonprefix(file_list)
+        if '/' in common_prefix:
+            root_folder = common_prefix.split('/')[0]
+        else:
+            root_folder = ""
+
+        for member in file_list:
+            # Remove top-level folder
+            relative_path = '/'.join(member.split('/')[1:]) if root_folder else member
+            target_path = os.path.join(dest_dir, relative_path)
+
+            os.makedirs(os.path.dirname(target_path), exist_ok=True)
+            with open(target_path, 'wb') as f:
+                f.write(zip_ref.read(member))
+```
+
+in admin to link the TestCaseBundle model to the Problem model, we can use Django's admin interface to register the TestCaseBundle model and display it in the Problem admin page.
+
+```python
+class TestCaseBundleInline(admin.StackedInline):
+    model = TestCaseBundle
+    extra = 0
+
+@admin.register(Problem)
+class ProblemAdmin(admin.ModelAdmin):
+    list_display = ['problem_name', 'problem_difficulty']
+    inlines = [TestCaseBundleInline]
+```
+
+When you use a StackedInline for TestCaseBundle inside ProblemAdmin, and you save both from the Django Admin interface (in one form), Django processes the save in two phases:
+
+Saves the parent Problem object first.
+This assigns a valid .id to problem.
+
+Then saves the inline TestCaseBundle, passing the newly saved problem as a foreign key.
+
+This means:<br>
+✅ By the time TestCaseBundle.save() is called, self.problem.id is already set, and your code works as expected.
