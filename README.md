@@ -893,14 +893,239 @@ python manage.py flush
 - Create users and super users, add problems with testcases.
 
 ### BUG
+
 Same testcase dir is used by all problems.
 On 2 hrs of tracking down, I found that the problem is within problem_detail.html where we are setting the problem_id editor.js which is using `window.problemId` that was not at all set in problem_detail.html.
 
 So on adding this to problem_detail.html, it will set the `window.problemId` variable to the current problem's ID and !PROBLEMO SOLVED!.
-``` html
+
+```html
 <script>
-  window.problemId = {{ problem.id }}; 
+  window.problemId = {{ problem.id }};
 </script>
 ```
 
+# Features specific to user
 
+Making submissions specific to user, so that we can see who submitted what.
+
+```python
+from django.contrib.auth.models import User
+
+const CodeSubmission(model.Model):
+    ...
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='submissions')
+    ...
+```
+
+## Adding user_activity view
+
+sorts by timestamp and shows all submissions by the user.
+
+```python
+@login_required
+def user_activity(request):
+    submissions = CodeSubmission.objects.filter(user=request.user).order_by('-submitted_at')
+    return render(request, 'submission/user_activity.html', {'submissions': submissions})
+```
+
+But will we load all submissions at once? No, that would be inefficient if the user has many submissions. Instead, we can use pagination + filtering based on time to load a limited number of submissions at a time. All of this can be done in the same view.
+
+```python
+@login_required
+def user_activity(request):
+    # Get filter param from query string
+    filter_days = request.GET.get('filter', '3') # select tag with name 'filter' in user_activity.html
+    try:
+        days = int(filter_days)
+        if days > 0:
+            date_limit = timezone.now() - timedelta(days=days)
+            submissions = CodeSubmission.objects.filter(
+                user=request.user,
+                submitted_at__gte=date_limit
+            )
+        else:
+            submissions = CodeSubmission.objects.filter(user=request.user) # all submissions
+    except ValueError:
+        # fallback to default 3 days if invalid value
+        submissions = CodeSubmission.objects.filter(user=request.user)
+
+    submissions = submissions.order_by('-submitted_at')
+
+    # Pagination
+    paginator = Paginator(submissions, 20)  # loades 20 per page
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
+    return render(request, 'submission/user_activity.html', {
+        'page_obj': page_obj,
+        'filter_days': filter_days,
+    })
+```
+
+Using table to display submissions
+
+```html
+css...
+
+<div class="container mt-4">
+  <h2>Your Activity</h2>
+  <div class="mb-3 d-flex gap-2">
+    <input
+      type="text"
+      id="problem-filter"
+      class="form-control"
+      placeholder="Filter by Problem Name or ID"
+    />
+    <button class="btn btn-dark" onclick="filterSubmissions()">Filter</button>
+    <button class="btn btn-outline-secondary" onclick="resetFilter()">
+      Reset
+    </button>
+  </div>
+  <div class="mb-3 d-flex gap-2 align-items-center">
+    <form method="get" class="d-flex gap-2">
+      <select name="filter" class="form-select">
+        <option value="3" {% if filter_days == "3" %}selected{% endif %}>Last 3 Days</option>
+        <option value="7" {% if filter_days == "7" %}selected{% endif %}>Last 7 Days</option>
+        <option value="0" {% if filter_days == "0" %}selected{% endif %}>All Time</option>
+      </select>
+      <button class="btn btn-dark" type="submit">Apply</button>
+    </form>
+  </div>
+```
+
+For the table, we can use Bootstrap classes to make it look nice and responsive.
+
+```html
+<table class="table table-light table-bordered table-hover">
+  <thead>
+    <tr>
+      <th>#ID</th>
+      <th>Problem</th>
+      <th>Language</th>
+      <th>Verdict</th>
+      <th>Submitted At</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for sub in page_obj %}
+    <tr
+      class="clickable-row {% if sub.verdict == 'Accepted' %}table-success{% elif sub.verdict == 'Wrong Answer' %}table-danger{% endif %}"
+      data-sub-id="{{ sub.id }}"
+      data-problem-id="{{ sub.problem.id }}"
+    >
+      <td>{{ sub.id }}</td>
+      <td>{{ sub.problem.problem_name }}</td>
+      <td>{{ sub.language|upper }}</td>
+      <td>{{ sub.verdict }}</td>
+      <td>{{ sub.submitted_at|date:"Y-m-d H:i:s" }}</td>
+    </tr>
+  </tbody>
+</table>
+```
+
+Html code for the dropdown that shows code and output/error when a row is clicked.
+
+```html
+      <tr id="dropdown-{{ sub.id }}" class="dropdown-row">
+        <td colspan="5">
+          <div class="d-flex justify-content-between mb-2">
+            <strong>Code:</strong>
+            <button
+              id="copy-btn-{{ sub.id }}"
+              class="btn btn-sm btn-outline-dark"
+              onclick="copyToClipboard('code-{{ sub.id }}', 'copy-btn-{{ sub.id }}')"
+            >
+              Copy Code
+            </button>
+          </div>
+          <div id="code-{{ sub.id }}" class="code-block">{{ sub.code }}</div>
+          {% if sub.verdict and sub.output %}
+          <hr />
+          <strong>Output / Error:</strong>
+          <div class="code-block">{{ sub.output }}</div>
+          {% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="5">No submissions yet.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+```
+
+For page navigation, we can use Bootstrap's pagination component.
+
+```html
+  <nav aria-label="Pagination">
+    <ul class="pagination justify-content-center">
+      {% if page_obj.has_previous %}
+        <li class="page-item">
+          <a class="page-link" href="?filter={{ filter_days }}&page={{ page_obj.previous_page_number }}">Previous</a>
+        </li>
+      {% endif %}
+
+      <li class="page-item disabled">
+        <span class="page-link">
+          Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+        </span>
+      </li>
+
+      {% if page_obj.has_next %}
+        <li class="page-item">
+          <a class="page-link" href="?filter={{ filter_days }}&page={{ page_obj.next_page_number }}">Next</a>
+        </li>
+      {% endif %}
+    </ul>
+  </nav>
+</div>
+{% endblock %}
+```
+
+For filtering submissions, we can add a simple JavaScript function that filters the rows based on the input in the filter box. This will allow users to quickly find submissions related to a specific problem by ID or name.
+
+```javascript
+function filterSubmissions() {
+  const rawInput = document.getElementById("problem-filter").value.trim();
+  const searchTerm = rawInput.toLowerCase();
+
+  document.querySelectorAll("tbody tr.clickable-row").forEach((row) => {
+    const submissionId = row
+      .querySelector("td:nth-child(1)")
+      .innerText.trim()
+      .toLowerCase(); // #ID
+    const problemName = row
+      .querySelector("td:nth-child(2)")
+      .innerText.trim()
+      .toLowerCase(); // Problem name
+    const dropdown = document.getElementById(`dropdown-${row.dataset.subId}`);
+    const problemId = row.dataset.problemId.toLowerCase(); // from data attribute
+
+    let show = false;
+
+    if (searchTerm.startsWith("#")) {
+      // Match submission ID only
+      const idSearch = searchTerm.slice(1);
+      show = submissionId === idSearch;
+    } else if (!isNaN(searchTerm)) {
+      // Numeric input: match either problem name OR problem ID
+      show = problemName.includes(searchTerm) || problemId === searchTerm;
+    } else {
+      // String input: match problem name
+      show = problemName.includes(searchTerm);
+    }
+
+    if (show) {
+      row.style.display = "";
+      if (dropdown) dropdown.style.display = "none";
+    } else {
+      row.style.display = "none";
+      if (dropdown) dropdown.style.display = "none";
+    }
+  });
+}
+```
+
+this function filters the submissions based on the input in the filter box. It checks if the input starts with a `#` to filter by submission ID or if it's a number to filter by problem ID or name.

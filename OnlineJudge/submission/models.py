@@ -2,6 +2,7 @@
 
 from django.db import models
 from problems.models import Problem
+from django.contrib.auth.models import User
 
 class CodeSubmission(models.Model):
     LANGUAGES = [
@@ -9,7 +10,7 @@ class CodeSubmission(models.Model):
         ('py', 'Python'),
         ('java', 'Java'),
     ]
-
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE, related_name='submissions')
     code = models.TextField()
     language = models.CharField(max_length=10, choices=LANGUAGES)

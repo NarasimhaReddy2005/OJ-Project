@@ -3,11 +3,15 @@ import subprocess
 import tempfile
 import json
 from django.http import JsonResponse
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, render
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from problems.models import Problem, TestCaseBundle
 from submission.models import CodeSubmission
 from submission.utils import execute_code, run_code_and_check
+from django.contrib.auth.decorators import login_required
+from datetime import timedelta
+from django.utils import timezone
+from django.core.paginator import Paginator
 
 @csrf_exempt
 def run(request):
@@ -42,6 +46,7 @@ def submit_code(request, problem_id):
         language = request.POST.get('language')
         # Save the submission
         submission = CodeSubmission.objects.create(
+            user=request.user,
             problem=problem,
             code=code,
             language=language
@@ -61,3 +66,33 @@ def submit_code(request, problem_id):
         })
 
     return JsonResponse({'error': 'Only POST allowed'}, status=405)
+
+@login_required
+def user_activity(request):
+    # Get filter param from query string
+    filter_days = request.GET.get('filter', '3')
+    try:
+        days = int(filter_days)
+        if days > 0:
+            date_limit = timezone.now() - timedelta(days=days)
+            submissions = CodeSubmission.objects.filter(
+                user=request.user,
+                submitted_at__gte=date_limit
+            )
+        else:
+            submissions = CodeSubmission.objects.filter(user=request.user)
+    except ValueError:
+        # fallback to default 3 days if invalid value
+        submissions = CodeSubmission.objects.filter(user=request.user)
+
+    submissions = submissions.order_by('-submitted_at')
+
+    # Pagination
+    paginator = Paginator(submissions, 20)  # 20 per page
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
+    return render(request, 'submission/user_activity.html', {
+        'page_obj': page_obj,
+        'filter_days': filter_days,
+    })

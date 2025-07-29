@@ -1,0 +1,117 @@
+{% extends "base1.html" %} {% block content %} {% load static %}
+<style>
+  .dropdown-row {
+    display: none;
+    background-color: #2c2c2c;
+    color: #eee;
+  }
+  .code-block {
+    background: #ffffff;
+    padding: 10px;
+    border-radius: 5px;
+    white-space: pre-wrap;
+    font-family: monospace;
+    font-size: 0.9rem;
+  }
+</style>
+
+<div class="container mt-4">
+  <h2>Your Activity</h2>
+  <div class="mb-3 d-flex gap-2">
+    <input
+      type="text"
+      id="problem-filter"
+      class="form-control"
+      placeholder="Filter by Problem Name or ID"
+    />
+    <button class="btn btn-dark" onclick="filterSubmissions()">Filter</button>
+    <button class="btn btn-outline-secondary" onclick="resetFilter()">
+      Reset
+    </button>
+  </div>
+  <div class="mb-3 d-flex gap-2 align-items-center">
+    <form method="get" class="d-flex gap-2">
+      <select name="filter" class="form-select">
+        <option value="3" {% if filter_days == "3" %}selected{% endif %}>Last 3 Days</option>
+        <option value="7" {% if filter_days == "7" %}selected{% endif %}>Last 7 Days</option>
+        <option value="0" {% if filter_days == "0" %}selected{% endif %}>All Time</option>
+      </select>
+      <button class="btn btn-dark" type="submit">Apply</button>
+    </form>
+  </div>
+
+  <table class="table table-light table-bordered table-hover">
+    <thead>
+      <tr>
+        <th>#ID</th>
+        <th>Problem</th>
+        <th>Language</th>
+        <th>Verdict</th>
+        <th>Submitted At</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for sub in page_obj %}
+      <tr
+        class="clickable-row {% if sub.verdict == 'Accepted' %}table-success{% elif sub.verdict == 'Wrong Answer' %}table-danger{% endif %}"
+        data-sub-id="{{ sub.id }}"
+        data-problem-id="{{ sub.problem.id }}"
+      >
+        <td>{{ sub.id }}</td>
+        <td>{{ sub.problem.problem_name }}</td>
+        <td>{{ sub.language|upper }}</td>
+        <td>{{ sub.verdict }}</td>
+        <td>{{ sub.submitted_at|date:"Y-m-d H:i:s" }}</td>
+      </tr>
+      <tr id="dropdown-{{ sub.id }}" class="dropdown-row">
+        <td colspan="5">
+          <div class="d-flex justify-content-between mb-2">
+            <strong>Code:</strong>
+            <button
+              id="copy-btn-{{ sub.id }}"
+              class="btn btn-sm btn-outline-dark"
+              onclick="copyToClipboard('code-{{ sub.id }}', 'copy-btn-{{ sub.id }}')"
+            >
+              Copy Code
+            </button>
+          </div>
+          <div id="code-{{ sub.id }}" class="code-block">{{ sub.code }}</div>
+          {% if sub.verdict and sub.output %}
+          <hr />
+          <strong>Output / Error:</strong>
+          <div class="code-block">{{ sub.output }}</div>
+          {% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="5">No submissions yet.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <nav aria-label="Pagination">
+    <ul class="pagination justify-content-center">
+      {% if page_obj.has_previous %}
+        <li class="page-item">
+          <a class="page-link" href="?filter={{ filter_days }}&page={{ page_obj.previous_page_number }}">Previous</a>
+        </li>
+      {% endif %}
+      
+      <li class="page-item disabled">
+        <span class="page-link">
+          Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+        </span>
+      </li>
+
+      {% if page_obj.has_next %}
+        <li class="page-item">
+          <a class="page-link" href="?filter={{ filter_days }}&page={{ page_obj.next_page_number }}">Next</a>
+        </li>
+      {% endif %}
+    </ul>
+  </nav>
+
+</div>
+<script src="{%static 'submission/js/user_activity.js' %}"></script>
+{% endblock %}

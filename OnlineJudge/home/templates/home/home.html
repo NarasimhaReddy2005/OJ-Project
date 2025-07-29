@@ -1,8 +1,5 @@
-{% extends 'base1.html' %}
-
-{% block title %}Home - Online Judge{% endblock %}
-
-{% block content %}
+{% extends 'base1.html' %} {% load static %}{% block title %}Home - Online
+Judge{% endblock %} {% block content %}
 <style>
   .home-container {
     width: 100%;
@@ -17,7 +14,7 @@
     padding: 40px 60px;
     background-color: white;
     text-align: center;
-   }
+  }
   h1 {
     margin-bottom: 10px;
     color: #333;
@@ -34,9 +31,115 @@
 
 <div class="home-container">
   <div class="welcome-container">
+    <img
+      src="{% static 'images/ByteBench_Logo.png' %}"
+      alt="Logo"
+      style="width: 25vh; height: 25vh"
+      class="d-inline-block align-top mr-2"
+    />
     <h1>Welcome, {{ request.user.username|default:"Guest" }}!</h1>
-    <p>Glad to have you here. Start solving problems or check your submissions.</p>
+    <p>
+      Glad to have you here. Start solving problems or check your submissions.
+    </p>
+  </div>
+</div>
+<footer class="bg-white">
+  <div class="container py-5">
+    <div class="row py-4">
+      <div class="col-lg-4 col-md-6 mb-4 mb-lg-0">
+        <img
+          src="{% static 'images/ByteBench_Logo.png' %}"
+          alt="ByteBench Logo"
+          width="180"
+          class="mb-3"
+        />
+        <p class="font-italic text-muted">
+          ByteBench is a modern online judge built for aspiring programmers to
+          practice, compete, and grow their skills.
+        </p>
+        <ul class="list-inline mt-4">
+          <li class="list-inline-item">
+            <a href="#" target="_blank" title="Twitter"
+              ><i class="fa fa-twitter"></i
+            ></a>
+          </li>
+          <li class="list-inline-item">
+            <a href="#" target="_blank" title="GitHub"
+              ><i class="fa fa-github"></i
+            ></a>
+          </li>
+          <li class="list-inline-item">
+            <a href="#" target="_blank" title="LinkedIn"
+              ><i class="fa fa-linkedin"></i
+            ></a>
+          </li>
+          <li class="list-inline-item">
+            <a href="#" target="_blank" title="Discord"
+              ><i class="fa fa-comments"></i
+            ></a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="col-lg-2 col-md-6 mb-4 mb-lg-0">
+        <h6 class="text-uppercase font-weight-bold mb-4">Explore</h6>
+        <ul class="list-unstyled mb-0">
+          <li class="mb-2">
+            <a href="/problems_list/" class="text-muted">Problems</a>
+          </li>
+          <li class="mb-2"><a href="#" class="text-muted">Contests</a></li>
+          <li class="mb-2"><a href="#" class="text-muted">Leaderboard</a></li>
+          <li class="mb-2"><a href="#" class="text-muted">Community</a></li>
+        </ul>
+      </div>
+
+      <div class="col-lg-2 col-md-6 mb-4 mb-lg-0">
+        <h6 class="text-uppercase font-weight-bold mb-4">Account</h6>
+        <ul class="list-unstyled mb-0">
+          <li class="mb-2">
+            <a href="#" class="text-muted">Login</a>
+          </li>
+          <li class="mb-2">
+            <a href="#" class="text-muted">Register</a>
+          </li>
+          <li class="mb-2"><a href="#" class="text-muted">Profile</a></li>
+          <li class="mb-2"><a href="#" class="text-muted">Submissions</a></li>
+        </ul>
+      </div>
+
+      <div class="col-lg-4 col-md-6 mb-lg-0">
+        <h6 class="text-uppercase font-weight-bold mb-4">Subscribe</h6>
+        <p class="text-muted mb-4">
+          Get updates on new challenges, contests, and programming tips directly
+          to your inbox.
+        </p>
+        <div class="p-1 rounded border">
+          <div class="input-group">
+            <input
+              type="email"
+              placeholder="Enter your email"
+              aria-describedby="button-addon1"
+              class="form-control border-0 shadow-0"
+            />
+            <div class="input-group-append">
+              <button id="button-addon1" type="submit" class="btn btn-link">
+                <i class="fa fa-paper-plane"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
-</div>
+  <!-- Copyright -->
+  <div class="bg-light py-4">
+    <div class="container text-center">
+      <p class="text-muted mb-0 py-2">
+        © 2025 ByteBench. Built for programmers, by programmers.
+      </p>
+    </div>
+  </div>
+</footer>
+
 {% endblock %}

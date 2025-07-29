@@ -18,6 +18,7 @@ var myCodeMirror = CodeMirror.fromTextArea(
     indentWithTabs: false,
   }
 );
+myCodeMirror.setSize("100%", "50vh");
 
 // Get CSRF token
 function getCSRFToken() {
@@ -50,6 +51,9 @@ document.getElementById("runBtn").addEventListener("click", () => {
 
 // Handle Submit Button
 document.getElementById("submitBtn").addEventListener("click", function () {
+  const submitBtn = this;
+  submitBtn.disabled = true;
+  submitBtn.textContent = "Submitting...";
   const code = myCodeMirror.getValue();
   const language = document.getElementById("languageSelect").value;
   const problemId = window.problemId || 1;
@@ -76,6 +80,9 @@ document.getElementById("submitBtn").addEventListener("click", function () {
     .catch((error) => {
       document.getElementById("outputArea").value = "Error during submission";
       console.error("Submission Error:", error);
+    })
+    .finally(() => {
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Submit";
     });
 });
-

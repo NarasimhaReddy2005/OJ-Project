@@ -2,6 +2,7 @@ from django.db import models
 from django.conf import settings
 import os
 from django.utils.text import slugify
+from django.contrib.auth.models import User
 
 # Create your models here.
 class Problem(models.Model):
@@ -42,3 +43,9 @@ class TestCaseBundle(models.Model):
     def __str__(self):
         return f"Test cases for {self.problem.problem_name}"
     
+class FavoriteProblem(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    problem = models.ForeignKey(Problem, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ('user', 'problem')  # Avoid duplicate favorites

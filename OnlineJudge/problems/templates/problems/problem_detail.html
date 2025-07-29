@@ -37,10 +37,7 @@
       </div>
 
       <!-- THE EDITOR -->
-      <textarea
-        id="codeArea"
-        placeholder="Write your solution here..."
-      ></textarea>
+      <textarea id="codeArea" height="500px"></textarea>
 
       <div class="editor-buttons">
         <button class="run-btn" id="runBtn">Run</button>
@@ -71,7 +68,7 @@
   </div>
 </div>
 <script>
-  window.problemId = {{ problem.id }}; 
+  window.problemId = {{ problem.id }};
 </script>
 <script src="{%static 'problems/js/editor.js' %}"></script>
 {% endblock %}
