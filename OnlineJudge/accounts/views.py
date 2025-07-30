@@ -10,6 +10,14 @@ from django.utils.encoding import force_bytes, force_str
 from django.core.mail import send_mail
 from django.conf import settings
 from django.http import HttpResponse
+from django.contrib.auth.decorators import login_required
+from .models import UserMetadata
+from submission.models import CodeSubmission
+from problems.models import Problem
+from django.db.models import Count
+from django.utils.timezone import now
+from datetime import timedelta
+import calendar
 
 # Register view
 def register_view(request):
@@ -94,3 +102,49 @@ def password_reset_confirm_view(request, uidb64, token):
         return render(request, 'auth/password_reset_confirm.html', {'form': form})
     else:
         return HttpResponse('Invalid reset link.')
+
+
+@login_required
+def user_profile(request):
+    user = request.user
+    metadata, created = UserMetadata.objects.get_or_create(user=user)
+
+    # Submissions grouped by day (last 7 days)
+    today = now().date()
+    past_week = [today - timedelta(days=i) for i in range(6, -1, -1)]
+    daily_submissions = (
+        CodeSubmission.objects.filter(user=user, submitted_at__date__in=past_week)
+        .extra(select={'day': "DATE(submitted_at)"})
+        .values('day')
+        .annotate(count=Count('id'))
+    )
+
+    # Prepare chart data
+    submission_dict = {str(day): 0 for day in past_week}
+    for entry in daily_submissions:
+        submission_dict[str(entry['day'])] = entry['count']
+
+    activity_labels = [day.strftime('%a') for day in past_week]  # ['Mon', 'Tue', ...]
+    activity_counts = list(submission_dict.values())             # [3, 5, 0, ...]
+
+    # Problems solved
+    solved_problems = (
+        CodeSubmission.objects.filter(user=user, verdict="Accepted")
+        .values('problem')
+        .distinct()
+        .count()
+    )
+    total_problems = Problem.objects.count()
+    solved_percent = round((solved_problems / total_problems) * 100, 1) if total_problems else 0
+
+    context = {
+        'user': user,
+        'metadata': metadata,
+        'activity_labels': activity_labels,
+        'activity_counts': activity_counts,
+        'solved_count': solved_problems,
+        'solved_percent': solved_percent,
+        'total_problems': total_problems,
+    }
+
+    return render(request, 'auth/profile_view.html', context)
