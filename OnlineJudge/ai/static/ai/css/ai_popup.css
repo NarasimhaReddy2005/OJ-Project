@@ -1,36 +1,175 @@
-/* ai/static/ai/css/ai_popup.css */
-
-::-webkit-scrollbar {
-  width: 5px;
-}
-
-::-webkit-scrollbar-track {
-  background: #2d2d2d;
-  border-radius: 10px;
-}
-
-::-webkit-scrollbar-thumb {
-  background-color: #888;
-  border-radius: 10px;
-  border: 2px solid #2d2d2d;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background-color: #aaa;
-}
-
-.ai_popup_body {
+/* Floating Overlay */
+#ai-popup-overlay {
   position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: #1e1e1e;
-  color: white;
-  padding: 20px;
-  border-radius: 10px;
-  width: 150vh;
-  height: 75vh;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(15, 15, 15, 0.9);
   z-index: 1000;
-  box-shadow: 0 0 15px rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Popup Box */
+#ai-popup {
+  position: relative;
+  background-color: #1e1e1e;
+  color: white;
+  padding: 30px;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 900px;
+  max-height: 75vh;
   overflow-y: auto;
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+  scrollbar-width: thin;
+  scrollbar-color: #888 #1e1e1e;
+}
+
+/* Close Button (✖) */
+#ai-popup-close {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: transparent;
+  border: none;
+  color: #ccc;
+  font-size: 22px;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+#ai-popup-close:hover {
+  color: #ff4444;
+}
+
+/* Code / Problem Boxes */
+.scrollable-block {
+  background-color: #2e2e2e;
+  padding: 12px;
+  border-radius: 6px;
+  color: white;
+  font-family: monospace;
+  white-space: pre-wrap;
+  overflow-y: auto;
+  max-height: 200px;
+  border: 1px solid #444;
+  margin-bottom: 15px;
+
+  scrollbar-width: thin;
+  scrollbar-color: #888 #2e2e2e;
+}
+
+/* Chrome/Edge Scrollbar Styling */
+.scrollable-block::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollable-block::-webkit-scrollbar-track {
+  background: #2e2e2e;
+}
+
+.scrollable-block::-webkit-scrollbar-thumb {
+  background-color: #888;
+  border-radius: 3px;
+}
+
+/* Buttons */
+.popup-btns {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.popup-btns button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+#ai-continue-btn {
+  background-color: #28a745;
+  color: white;
+}
+
+#ai-review-response {
+  background-color: #1e1e2f;
+  color: #f0f0f0;
+  border: 2px solid #444;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  animation: fadeIn 0.4s ease-in-out;
+}
+
+#ai-review-response h3 {
+  font-size: 1.5rem;
+  margin-bottom: 16px;
+  color: #4dd0e1;
+  border-bottom: 1px solid #555;
+  padding-bottom: 8px;
+}
+
+#ai-review-content.scrollable-block {
+  max-height: 400px;
+  overflow-y: auto;
+  background-color: #2a2a3b;
+  border: 1px solid #555;
+  border-radius: 8px;
+  padding: 16px;
+  font-size: 1rem;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+/* Optional: Smooth fade-in */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Markdown code block styling */
+#ai-review-content pre {
+  background: #1e1e2f;
+  color: #e0e0e0;
+  padding: 12px;
+  border-radius: 6px;
+  overflow-x: auto;
+  margin-top: 12px;
+  font-family: "Courier New", monospace;
+}
+
+#ai-review-content code {
+  background: #1e1e2f;
+  color: #f8f8f2;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: "Courier New", monospace;
+}
+  
+/* Scrollbar style */
+#ai-review-content::-webkit-scrollbar {
+  width: 10px;
+}
+
+#ai-review-content::-webkit-scrollbar-thumb {
+  background-color: #666;
+  border-radius: 6px;
+}
+
+#ai-review-content::-webkit-scrollbar-track {
+  background-color: #2a2a3b;
 }

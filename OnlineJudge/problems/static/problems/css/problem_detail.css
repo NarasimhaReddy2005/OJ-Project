@@ -73,7 +73,7 @@
 }
 
 .submit-btn {
-  background-color: #0984e3; /* blue */
+  background-color: #0091ff; /* blue */
   color: white;
 }
 
@@ -108,10 +108,65 @@
   border: 1px solid #ccc;
   border-radius: 6px;
   font-size: 14px;
+  color: black;
 }
 .CodeMirror {
   font-family: "JetBrains Mono", "Fira Code", Consolas, monospace;
   font-size: 14px;
   background-color: white;
   border-radius: 6px;
+}
+#ai-review-btn {
+  display: inline-block;
+  width: 150px;
+  height: 40px;
+  border-radius: 10px;
+  border: 1px solid #0052cc; /* Pacific Blue border */
+  position: relative;
+  overflow: hidden;
+  transition: all 0.5s ease-in;
+  z-index: 1;
+  background: transparent;
+  cursor: pointer;
+}
+
+#ai-review-btn::before,
+#ai-review-btn::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  width: 0;
+  height: 100%;
+  transform: skew(15deg);
+  transition: all 0.5s;
+  overflow: hidden;
+  z-index: -1;
+}
+
+#ai-review-btn::before {
+  left: -10px;
+  background: #2baaec; /* lighter sky blue */
+}
+
+#ai-review-btn::after {
+  right: -10px;
+  background: #4eccf9; /* bright cyan blue accent */
+}
+
+#ai-review-btn:hover::before,
+#ai-review-btn:hover::after {
+  width: 58%;
+}
+
+#ai-review-btn:hover span {
+  color: #e0f7ff; /* light icy blue text on hover */
+  transition: 0.3s;
+}
+
+#ai-review-btn span {
+  color: #0abcf9; /* default bright cyan blue */
+  font-size: 18px;
+  transition: all 0.3s ease-in;
+  position: relative;
+  z-index: 2;
 }

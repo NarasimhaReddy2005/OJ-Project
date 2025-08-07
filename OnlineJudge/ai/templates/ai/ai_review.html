@@ -1,0 +1,38 @@
+<!-- In <head> -->
+<link
+  rel="stylesheet"
+  href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css"
+/>
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+<script>
+  hljs.highlightAll();
+</script>
+
+<div id="ai-popup-overlay">
+  <div id="ai-popup">
+    <button id="ai-popup-close" title="Close">✖</button>
+
+    <h2>AI Code Request (Preview)</h2>
+    <p><strong>Language:</strong> {{ language }}</p>
+    <p><strong>Verdict:</strong> {{ verdict }}</p>
+
+    <h3>Problem Statement</h3>
+    <pre class="scrollable-block">{{ problem_statement }}</pre>
+
+    <h3>Your Code</h3>
+    <pre class="scrollable-block">{{ code }}</pre>
+
+    <div class="popup-btns">
+      <button id="ai-continue-btn" data-submission-id="{{ submission_id }}">
+        Continue
+      </button>
+    </div>
+
+    <div id="ai-review-response" style="display: none; margin-top: 20px">
+      <h3>AI Code Review</h3>
+      <div id="ai-review-content" class="scrollable-block">
+        <!-- Review result shown here -->
+      </div>
+    </div>
+  </div>
+</div>

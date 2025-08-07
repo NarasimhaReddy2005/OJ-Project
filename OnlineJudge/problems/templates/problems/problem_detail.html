@@ -1,6 +1,6 @@
 {% extends 'base1.html' %} {% block content %} {% load static %}
 <link rel="stylesheet" href="{% static 'problems/css/problem_detail.css' %}" />
-
+<link rel="stylesheet" href="{% static 'ai/css/ai_popup.css' %}" />
 <div class="problem-container">
   <div class="problem-left">
     <h2>{{ problem.problem_name }}</h2>
@@ -40,7 +40,10 @@
       <textarea id="codeArea" height="500px"></textarea>
 
       <div class="editor-buttons">
-        <button id="ai-review-btn" class="btn btn-primary">💡 AI Review</button>
+        <button id="ai-review-btn" type="button" class="btn me-auto">
+          <span>AI Review</span>
+        </button>
+
         <button class="run-btn" id="runBtn">Run</button>
         <button class="submit-btn" id="submitBtn">Submit</button>
       </div>
