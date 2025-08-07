@@ -1,0 +1,36 @@
+/* ai/static/ai/css/ai_popup.css */
+
+::-webkit-scrollbar {
+  width: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: #2d2d2d;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #888;
+  border-radius: 10px;
+  border: 2px solid #2d2d2d;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #aaa;
+}
+
+.ai_popup_body {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #1e1e1e;
+  color: white;
+  padding: 20px;
+  border-radius: 10px;
+  width: 150vh;
+  height: 75vh;
+  z-index: 1000;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.6);
+  overflow-y: auto;
+}

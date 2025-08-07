@@ -40,6 +40,7 @@
       <textarea id="codeArea" height="500px"></textarea>
 
       <div class="editor-buttons">
+        <button id="ai-review-btn" class="btn btn-primary">💡 AI Review</button>
         <button class="run-btn" id="runBtn">Run</button>
         <button class="submit-btn" id="submitBtn">Submit</button>
       </div>
@@ -67,8 +68,12 @@
     </div>
   </div>
 </div>
+<div id="ai-review-modal" style="display: none"></div>
 <script>
   window.problemId = {{ problem.id }};
 </script>
 <script src="{%static 'problems/js/editor.js' %}"></script>
+<script src="{% static 'ai/js/ai.js' %}"></script>
+<div id="ai-review-modal" style="display: none"></div>
+
 {% endblock %}

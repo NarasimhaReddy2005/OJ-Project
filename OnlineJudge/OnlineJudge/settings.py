@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'home',
     'problems',
     'submission',
+    'ai',
 ]
 
 MIDDLEWARE = [

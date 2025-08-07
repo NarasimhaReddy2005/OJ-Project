@@ -96,3 +96,12 @@ def user_activity(request):
         'page_obj': page_obj,
         'filter_days': filter_days,
     })
+
+@login_required
+def latest_submission(request, problem_id):
+    try:
+        problem = Problem.objects.get(id=problem_id)
+        latest = CodeSubmission.objects.filter(user=request.user, problem=problem).latest('submitted_at')
+        return JsonResponse({'id': latest.id, 'verdict': latest.verdict})
+    except CodeSubmission.DoesNotExist:
+        return JsonResponse({'error': 'No submissions found for this problem.'}, status=404)

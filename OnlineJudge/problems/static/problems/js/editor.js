@@ -86,3 +86,34 @@ document.getElementById("submitBtn").addEventListener("click", function () {
       submitBtn.textContent = "Submit";
     });
 });
+
+document.addEventListener("DOMContentLoaded", () => {
+  const aiBtn = document.getElementById("ai-review-btn");
+
+  if (!aiBtn) return;
+
+  aiBtn.addEventListener("click", () => {
+    if (!window.problemId) {
+      alert("Problem ID not found.");
+      return;
+    }
+
+    fetch(`/submission/latest/${window.problemId}/`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.error) {
+          alert(data.error);
+          return;
+        }
+
+        const latestSubmissionId = data.id;
+        console.log("✅ Latest submission ID:", latestSubmissionId);
+
+        // 🔜 Next step: Call AI review API using this ID
+      })
+      .catch((err) => {
+        console.error("Failed to fetch latest submission:", err);
+        alert("Something went wrong.");
+      });
+  });
+});

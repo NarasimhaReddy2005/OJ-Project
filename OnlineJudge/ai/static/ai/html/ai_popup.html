@@ -1,0 +1,81 @@
+<div
+  class="ai_popup_body"
+  style="
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #1e1e1e;
+    color: white;
+    padding: 20px;
+    border-radius: 10px;
+    width: 150vh;
+    height: 75vh;
+    z-index: 1000;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.6);
+    overflow-y: auto;
+  "
+>
+  <h3 style="margin-top: 0">🤖 AI Code Review Request (Preview)</h3>
+  <p><strong>Problem:</strong> {{problem_statement}}</p>
+  <p><strong>Language:</strong> {{language}}</p>
+  <p><strong>Verdict:</strong> {{verdict}}</p>
+  <p><strong>Code:</strong></p>
+  <pre
+    style="
+      background-color: #2d2d2d;
+      padding: 10px;
+      border-radius: 5px;
+      overflow-x: auto;
+      color: white;
+    "
+  ><code>{{code}}</code></pre>
+
+  <button
+    onclick="closeAiPopup()"
+    style="
+      margin-top: 15px;
+      background-color: #ff4444;
+      color: white;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    "
+  >
+    Close
+  </button>
+  <button
+    id="continue-btn"
+    style="
+      margin-top: 15px;
+      background-color: #4caf50;
+      color: white;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    "
+  >
+    Continue →
+  </button>
+  <!-- The AI Review Response Box (hidden by default) -->
+  <div id="ai-review-response" style="display: none; margin-top: 20px">
+    <h4>📋 AI Feedback:</h4>
+    <div
+      id="ai-review-content"
+      style="
+        background-color: #2e2e2e;
+        padding: 12px;
+        border-radius: 6px;
+        color: white;
+        font-family: monospace;
+        white-space: pre-wrap;
+        overflow-y: auto;
+        max-height: 300px;
+      "
+    >
+      <!-- AI review will be injected here -->
+    </div>
+  </div>
+</div>

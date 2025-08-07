@@ -1,0 +1,16 @@
+<div id="ai-review-modal" style="display:block;">
+  <link rel="stylesheet" href="{% static 'ai/css/ai_popup.css' %}" />
+  <h3>🤖 AI Code Review Request (Preview)</h3>
+  <p><strong>Problem:</strong> {{ problem_statement }}</p>
+  <p><strong>Language:</strong> {{ language }}</p>
+  <p><strong>Verdict:</strong> {{ verdict }}</p>
+  <pre><code>{{ code|linebreaksbr|escape }}</code></pre>
+
+  <button id="ai-close-btn">Close</button>
+  <button id="continue-btn" data-submission-id="{{ submission_id }}">Continue →</button>
+
+  <div id="ai-review-response" style="display:none;">
+    <h4>📋 AI Feedback:</h4>
+    <div id="ai-review-content"></div>
+  </div>
+</div>
