@@ -54,54 +54,54 @@ def logout_view(request):
 #     return render(request, 'auth/profile.html')
 
 # Password change view
-def change_password_view(request):
-    if request.method == 'POST':
-        form = PasswordChangeForm(user=request.user, data=request.POST)
-        if form.is_valid():
-            user = form.save()
-            update_session_auth_hash(request, user)
-            return redirect('profile')
-    else:
-        form = PasswordChangeForm(user=request.user)
-    return render(request, 'auth/change_password.html', {'form': form})
+# def change_password_view(request):
+#     if request.method == 'POST':
+#         form = PasswordChangeForm(user=request.user, data=request.POST)
+#         if form.is_valid():
+#             user = form.save()
+#             update_session_auth_hash(request, user)
+#             return redirect('profile')
+#     else:
+#         form = PasswordChangeForm(user=request.user)
+#     return render(request, 'auth/change_password.html', {'form': form})
 
-# Password reset request
-def password_reset_request_view(request):
-    if request.method == 'POST':
-        form = PasswordResetForm(request.POST)
-        if form.is_valid():
-            user_email = form.cleaned_data['email']
-            user = User.objects.filter(email=user_email).first()
-            if user:
-                token = default_token_generator.make_token(user)
-                uid = urlsafe_base64_encode(force_bytes(user.pk))
-                reset_url = request.build_absolute_uri(f'/password-reset-confirm/{uid}/{token}/')
-                message = f'Click the link to reset your password: {reset_url}'
-                send_mail('Reset your password', message, settings.DEFAULT_FROM_EMAIL, [user_email])
-            return HttpResponse('Password reset link sent (if user exists).')
-    else:
-        form = PasswordResetForm()
-    return render(request, 'auth/password_reset.html', {'form': form})
+# # Password reset request
+# def password_reset_request_view(request):
+#     if request.method == 'POST':
+#         form = PasswordResetForm(request.POST)
+#         if form.is_valid():
+#             user_email = form.cleaned_data['email']
+#             user = User.objects.filter(email=user_email).first()
+#             if user:
+#                 token = default_token_generator.make_token(user)
+#                 uid = urlsafe_base64_encode(force_bytes(user.pk))
+#                 reset_url = request.build_absolute_uri(f'/password-reset-confirm/{uid}/{token}/')
+#                 message = f'Click the link to reset your password: {reset_url}'
+#                 send_mail('Reset your password', message, settings.DEFAULT_FROM_EMAIL, [user_email])
+#             return HttpResponse('Password reset link sent (if user exists).')
+#     else:
+#         form = PasswordResetForm()
+#     return render(request, 'auth/password_reset.html', {'form': form})
 
-# Password reset confirm
-def password_reset_confirm_view(request, uidb64, token):
-    try:
-        uid = force_str(urlsafe_base64_decode(uidb64))
-        user = User.objects.get(pk=uid)
-    except (User.DoesNotExist, ValueError):
-        user = None
+# # Password reset confirm
+# def password_reset_confirm_view(request, uidb64, token):
+#     try:
+#         uid = force_str(urlsafe_base64_decode(uidb64))
+#         user = User.objects.get(pk=uid)
+#     except (User.DoesNotExist, ValueError):
+#         user = None
 
-    if user and default_token_generator.check_token(user, token):
-        if request.method == 'POST':
-            form = SetPasswordForm(user, request.POST)
-            if form.is_valid():
-                form.save()
-                return redirect('login')
-        else:
-            form = SetPasswordForm(user)
-        return render(request, 'auth/password_reset_confirm.html', {'form': form})
-    else:
-        return HttpResponse('Invalid reset link.')
+#     if user and default_token_generator.check_token(user, token):
+#         if request.method == 'POST':
+#             form = SetPasswordForm(user, request.POST)
+#             if form.is_valid():
+#                 form.save()
+#                 return redirect('login')
+#         else:
+#             form = SetPasswordForm(user)
+#         return render(request, 'auth/password_reset_confirm.html', {'form': form})
+#     else:
+#         return HttpResponse('Invalid reset link.')
 
 
 @login_required

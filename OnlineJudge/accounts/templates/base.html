@@ -1,170 +1,51 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>{% block title %}Online Judge{% endblock %}</title>
-
-    {% load static %}
-
-    <!-- Global Styles -->
-    <style>
-      :root {
-        --bg-color: #f9f9f9;
-        --text-color: #111;
-        --card-bg: white;
-        --nav-bg: white;
-        --nav-text: black;
-        --primary: #00b894;
-        --shadow: rgba(0, 0, 0, 0.1);
-      }
-
-      body {
-        font-family: "Segoe UI", Roboto, Helvetica, sans-serif;
-        background-color: var(--bg-color);
-        color: var(--text-color);
-        margin: 0;
-        padding: 0;
-      }
-
-      .floating-navbar {
-        height: 45px;
-        background-color: var(--nav-bg);
-        color: var(--nav-text);
-        border-radius: 12px;
-        box-shadow: 0 4px 12px var(--shadow);
-        position: fixed;
-        top: 10px;
-        left: 10px;
-        right: 10px;
-        padding: 0 20px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        z-index: 999;
-      }
-
-      .navbar-left {
-        font-weight: bold;
-        color: var(--primary);
-        font-size: 18px;
-      }
-
-      .navbar-center {
-        font-weight: 500;
-        font-size: 15px;
-      }
-
-      .container {
-        margin: 100px auto 40px;
-        padding: 20px;
-        max-width: 600px;
-        background-color: var(--card-bg);
-        border-radius: 12px;
-        box-shadow: 0 4px 10px var(--shadow);
-      }
-
-      a {
-        color: #0984e3;
-        text-decoration: none;
-      }
-
-      a:hover {
-        text-decoration: underline;
-      }
-
-      .errorlist {
-        color: red;
-        margin-bottom: 10px;
-        list-style: none;
-        padding: 0;
-      }
-
-      .message {
-        padding: 10px;
-        background: #dff0d8;
-        border: 1px solid #c3e6cb;
-        color: #3c763d;
-        border-radius: 5px;
-        margin-bottom: 15px;
-      }
-      /* Primary Button */
-      .btn-primary {
-        background-color: #00b8b8;
-        color: #fff;
-        border: none;
-        padding: 10px 16px;
-        border-radius: 6px;
-        font-weight: 500;
-        cursor: pointer;
-        transition: background-color 0.2s ease-in-out, transform 0.1s ease;
-      }
-
-      .btn-primary:hover {
-        background-color: #019898;
-        transform: scale(1.03);
-      }
-
-      /* Secondary Button */
-      .btn-secondary {
-        background-color: #2d3436;
-        color: #fff;
-        border: none;
-        padding: 10px 16px;
-        border-radius: 6px;
-        font-weight: 500;
-        cursor: pointer;
-        transition: background-color 0.2s ease-in-out, transform 0.1s ease;
-      }
-
-      .btn-secondary:hover {
-        background-color: #636e72;
-        transform: scale(1.03);
-      }
-      input[type="text"],
-      input[type="email"],
-      input[type="password"],
-      textarea {
-        width: 95%;
-        padding: 10px 14px;
-        border: 1px solid #ccc;
-        border-radius: 6px;
-        background-color: #ffffff;
-        color: #000000;
-        font-size: 14px;
-        outline: none;
-        transition: border-color 0.2s ease;
-      }
-
-      input[type="text"]:focus,
-      input[type="email"]:focus,
-      input[type="password"]:focus,
-      textarea:focus {
-        border-color: #00cec9;
-        box-shadow: 0 0 4px #00cec944;
-      }
-      a {
-        color: #00cec9;
-        text-decoration: none;
-        transition: color 0.2s ease;
-      }
-
-      a:hover {
-        color: #81ecec;
-        text-decoration: underline;
-      }
-    </style>
-
-    {% block extra_head %}{% endblock %}
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ByteBench | {% block title %}{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'accounts/css/base.css' %}" />
   </head>
-
   <body>
-    <header>
-      <div class="floating-navbar">
-        <div class="navbar-left">OJ</div>
-        <div class="navbar-center">Login to Use</div>
+    <div class="container">
+      <!-- Left section with animated background -->
+      <div class="left-section">
+        <div class="lines"></div>
+        <div class="logo-container">
+          <img src="{% static 'images/ByteBench.png' %}" alt="ByteBench Logo" />
+          <h1 class="logo-text">ByteBench</h1>
+        </div>
       </div>
-    </header>
 
-    <div class="container">{% block content %}{% endblock %}</div>
+      <!-- Right section -->
+      <div class="right-section">
+        <div class="form-box">
+          {% block content %}
+          <h2>Login</h2>
+          <p>Welcome back! Please log in to your account.</p>
+          <form method="post">
+            {% csrf_token %}
+            <input
+              type="text"
+              name="username"
+              placeholder="Username"
+              required
+            />
+            <input
+              type="password"
+              name="password"
+              placeholder="Password"
+              required
+            />
+            <button type="submit">Login</button>
+          </form>
+          <div class="small-text">
+            Don't have an account? <a href="{% url 'register' %}">Sign Up</a>
+          </div>
+          {% endblock %}
+        </div>
+      </div>
+    </div>
   </body>
 </html>
