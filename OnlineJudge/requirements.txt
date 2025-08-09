@@ -13,3 +13,5 @@ python-dotenv>=1.0.1
 
 # Gunicorn for production server (if using Docker deployment)
 gunicorn>=21.2.0
+
+Pillow>=10.0.0

@@ -61,3 +61,14 @@ function filterSubmissions() {
     }
   });
 }
+function resetFilter() {
+  // Clear the filter input
+  document.getElementById("problem-filter").value = "";
+
+  // Show all clickable rows
+  document.querySelectorAll("tbody tr.clickable-row").forEach((row) => {
+    row.style.display = "";
+    const dropdown = document.getElementById(`dropdown-${row.dataset.subId}`);
+    if (dropdown) dropdown.style.display = "none";
+  });
+}

@@ -1,6 +1,4 @@
-{% extends 'base1.html' %}
-
-{% block content %}
+{% extends 'base1.html' %} {% block content %}
 <style>
   .problem-page-container {
     max-width: 1000px;
@@ -27,7 +25,7 @@
   .top-bar button {
     padding: 10px 16px;
     background-color: white;
-    color: #32CD32;
+    color: #32cd32;
     border: none;
     border-radius: 10px;
     font-weight: bold;
@@ -55,7 +53,7 @@
     border-radius: 10px;
     border: none;
     background-color: #ffffff;
-    color: #32CD32;
+    color: #32cd32;
     cursor: pointer;
     text-decoration: none;
     display: inline-block;
@@ -75,17 +73,17 @@
   }
 
   .difficulty-easy {
-    color: #4CAF50;
+    color: #4caf50;
     background-color: rgba(76, 175, 80, 0.15); /* Green with 10% opacity */
   }
 
   .difficulty-medium {
-    color: #FFA500;
+    color: #ffa500;
     background-color: rgba(255, 165, 0, 0.15);
   }
 
   .difficulty-hard {
-    color: #E53935;
+    color: #e53935;
     background-color: rgba(229, 57, 53, 0.15);
   }
   .filter-btn {
@@ -107,22 +105,26 @@
   .filter-btn:hover .size-6 {
     stroke: #28a745; /* Green hover */
   }
-  </style>
+</style>
 
 <div class="problem-page-container">
   <!-- Search + Filter -->
   <div class="top-bar">
-    <input type="text" placeholder="Search problems...">
-    <button class="filter-btn" title="Filter problems">
-      <svg xmlns="http://www.w3.org/2000/svg"
-           fill="none"
-           viewBox="0 0 24 24"
-           stroke-width="1.5"
-           stroke="currentColor"
-           class="size-6">
-        <path stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 0 1-.659 1.591l-5.432 5.432a2.25 2.25 0 0 0-.659 1.591v2.927a2.25 2.25 0 0 1-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 0 0-.659-1.591L3.659 7.409A2.25 2.25 0 0 1 3 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0 1 12 3Z" />
+    <input type="text" id="searchBox" placeholder="Search problems..." />
+    <button class="filter-btn" id="filterBtn" title="Filter problems">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke-width="1.5"
+        stroke="currentColor"
+        class="size-6"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 0 1-.659 1.591l-5.432 5.432a2.25 2.25 0 0 0-.659 1.591v2.927a2.25 2.25 0 0 1-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 0 0-.659-1.591L3.659 7.409A2.25 2.25 0 0 1 3 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0 1 12 3Z"
+        />
       </svg>
     </button>
   </div>
@@ -130,32 +132,32 @@
   <!-- Problem list container -->
   <div class="problem-grid">
     {% for problem in problems %}
-      <div class="problem-item">
-        <a href="{% url 'problem_detail' problem.id %}">
-          <strong>{{ problem.problem_name }}</strong>
-          <span class="difficulty
-            {% if problem.problem_difficulty == 1 %}difficulty-easy
-            {% elif problem.problem_difficulty == 2 %}difficulty-medium
-            {% elif problem.problem_difficulty == 3 %}difficulty-hard
-            {% endif %}">
-            {{ problem.get_problem_difficulty_display }}
-          </span>
-        </a>
-      </div>
+    <div class="problem-item">
+      <a href="{% url 'problem_detail' problem.id %}">
+        <strong>{{ problem.problem_name }}</strong>
+        <span
+          class="difficulty {% if problem.problem_difficulty == 1 %}difficulty-easy {% elif problem.problem_difficulty == 2 %}difficulty-medium {% elif problem.problem_difficulty == 3 %}difficulty-hard {% endif %}"
+        >
+          {{ problem.get_problem_difficulty_display }}
+        </span>
+      </a>
+    </div>
     {% empty %}
-      <p>No problems available.</p>
+    <p>No problems available.</p>
     {% endfor %}
   </div>
 
   <!-- Prev / Next arrows -->
-  <div class="pagination" style="text-align: center; margin-top: 30px;">
+  <div class="pagination" style="text-align: center; margin-top: 30px">
     {% if page_obj.has_previous %}
     <a href="?page={{ page_obj.previous_page_number }}">
       <button class="pagination-btn">&larr; Previous</button>
     </a>
     {% endif %}
 
-    <span style="margin: 5px 10px;">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+    <span style="margin: 5px 10px"
+      >Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span
+    >
 
     {% if page_obj.has_next %}
     <a href="?page={{ page_obj.next_page_number }}">
@@ -164,4 +166,26 @@
     {% endif %}
   </div>
 </div>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const filterBtn = document.getElementById("filterBtn");
+    const searchBox = document.getElementById("searchBox");
+    const problems = document.querySelectorAll(".problem-item");
+
+    filterBtn.addEventListener("click", () => {
+      const searchTerm = searchBox.value.trim().toLowerCase();
+
+      problems.forEach((problem) => {
+        const text = problem.textContent.trim().toLowerCase();
+        problem.style.display = text.includes(searchTerm) ? "" : "none";
+      });
+    });
+  });
+</script>
+
+<style>
+  .hidden {
+    display: none;
+  }
+</style>
 {% endblock %}

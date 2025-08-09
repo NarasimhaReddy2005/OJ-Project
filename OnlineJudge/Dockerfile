@@ -1,18 +1,30 @@
 FROM python:3.11
 
+# Set workdir
 WORKDIR /OJ
-COPY . /OJ
-RUN apt update && apt install -y \
+
+# Install system dependencies in one layer & clean up
+RUN apt-get update && apt-get install -y \
     g++ \
     openjdk-17-jdk \
-    python3
-# Install dependencies
-RUN pip install --no-cache-dir -r requirements.txt
-RUN python3 manage.py makemigrations
-RUN python3 manage.py migrate
-EXPOSE 8000
+    && rm -rf /var/lib/apt/lists/*
 
+# Copy only requirements first for caching
+COPY requirements.txt /OJ/
+
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy project files
+COPY . /OJ
+
+# Environment variables
 ENV DJANGO_SETTINGS_MODULE=OnlineJudge.settings
 ENV PYTHONUNBUFFERED=1
- 
-CMD ["python3", "manage.py", "runserver", "0.0.0.0:8000"]
+
+# Expose port
+EXPOSE 8000
+
+# Run server (migrations at runtime)
+CMD ["sh", "-c", "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"]
+
