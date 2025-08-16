@@ -76,11 +76,13 @@
 <div id="ai-review-modal" style="display: none"></div>
 <script>
   window.problemId = `{{ problem.id }}`;
-  window.latestCode = `{{ latest_code|escapejs }}`;
+  window.latest_submissions = JSON.parse(
+    "{{ latest_submissions_json|escapejs }}"
+  );
   window.latestLang = `{{ latest_lang }}`;
 </script>
-<script src="{% static 'problems/js/editor.js' %}"></script>
 <script src="{% static 'ai/js/ai.js' %}"></script>
+<script src="{% static 'problems/js/editor.js' %}"></script>
 <!-- <script src="{% static 'problems/js/boilerplates.js' %}"></script> -->
 <div id="ai-review-modal" style="display: none"></div>
 

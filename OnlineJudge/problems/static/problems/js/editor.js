@@ -46,7 +46,6 @@ const initialLang =
   window.latestLang && window.latestLang.trim() !== ""
     ? window.latestLang
     : "cpp";
-
 langSelect.value = initialLang;
 
 // Initialize CodeMirror
@@ -66,8 +65,8 @@ var myCodeMirror = CodeMirror.fromTextArea(
 myCodeMirror.setSize("100%", "50vh");
 
 // Set initial code content
-if (window.latestCode && window.latestCode.trim().length > 0) {
-  myCodeMirror.setValue(window.latestCode);
+if (window.latest_submissions[initialLang].code.length > 0) {
+  myCodeMirror.setValue(window.latest_submissions[initialLang].code);
 } else {
   myCodeMirror.setValue(boilerplates[initialLang]);
 }
@@ -84,7 +83,12 @@ langSelect.addEventListener("change", function () {
   myCodeMirror.setOption("mode", languageModeMap[selectedLang]);
 
   // Only insert boilerplate if user hasn’t typed their own code yet
-  myCodeMirror.setValue(boilerplates[selectedLang]);
+  if (window.latest_submissions[selectedLang]?.code?.length > 0) {
+    console.log(window.latest_submissions[selectedLang].code);
+    myCodeMirror.setValue(window.latest_submissions[selectedLang].code);
+  } else {
+    myCodeMirror.setValue(boilerplates[selectedLang]);
+  }
 });
 
 // Get CSRF token

@@ -120,35 +120,3 @@ def latest_submission(request, problem_id, language=None):
             'error': 'No submissions found for this problem.'
         }, status=404)
 
-@login_required
-def latest_submissions(request, problem_id):
-    try:
-        problem = Problem.objects.get(id=problem_id)
-
-        # Get latest submission for each language
-        languages = ["cpp", "python", "java"]
-        latest_data = {}
-
-        for lang in languages:
-            sub = (
-                CodeSubmission.objects.filter(user=request.user, problem=problem, language=lang)
-                .order_by("-submitted_at")
-                .first()
-            )
-            if sub:
-                latest_data[lang] = {
-                    "id": sub.id,
-                    "verdict": sub.verdict,
-                    "code": sub.code,
-                    "language": sub.language,
-                }
-            else:
-                latest_data[lang] = None
-
-        return JsonResponse({"submissions": latest_data})
-
-    except Problem.DoesNotExist:
-        return JsonResponse(
-            {"error": "Problem not found."},
-            status=404
-        )
