@@ -3,6 +3,51 @@ const languageModeMap = {
   java: "text/x-java",
   python: "python",
 };
+// boilerplates.js
+
+// Boilerplate starter code for each language
+const boilerplates = {
+  cpp: `#include <bits/stdc++.h>
+using namespace std;
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    // Your code here
+
+    return 0;
+}`,
+
+  python: `def main():
+    # Your code here
+    pass
+
+if __name__ == "__main__":
+    main()`,
+
+  java: `import java.util.*;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+
+        // Your code here
+
+        sc.close();
+    }
+}`,
+};
+
+const langSelect = document.getElementById("languageSelect");
+
+// Determine initial language (latest or default cpp)
+const initialLang =
+  window.latestLang && window.latestLang.trim() !== ""
+    ? window.latestLang
+    : "cpp";
+
+langSelect.value = initialLang;
 
 // Initialize CodeMirror
 var myCodeMirror = CodeMirror.fromTextArea(
@@ -10,7 +55,7 @@ var myCodeMirror = CodeMirror.fromTextArea(
   {
     lineNumbers: true,
     theme: "material",
-    mode: languageModeMap["cpp"],
+    mode: languageModeMap[initialLang],
     matchBrackets: true,
     autoCloseBrackets: true,
     indentUnit: 4,
@@ -19,6 +64,28 @@ var myCodeMirror = CodeMirror.fromTextArea(
   }
 );
 myCodeMirror.setSize("100%", "50vh");
+
+// Set initial code content
+if (window.latestCode && window.latestCode.trim().length > 0) {
+  myCodeMirror.setValue(window.latestCode);
+} else {
+  myCodeMirror.setValue(boilerplates[initialLang]);
+}
+
+// Track whether user has modified the editor
+let userModified = false;
+myCodeMirror.on("change", function () {
+  userModified = true;
+});
+
+langSelect.addEventListener("change", function () {
+  const selectedLang = this.value;
+
+  myCodeMirror.setOption("mode", languageModeMap[selectedLang]);
+
+  // Only insert boilerplate if user hasn’t typed their own code yet
+  myCodeMirror.setValue(boilerplates[selectedLang]);
+});
 
 // Get CSRF token
 function getCSRFToken() {
@@ -45,7 +112,7 @@ document.getElementById("runBtn").addEventListener("click", () => {
     .then((res) => res.json())
     .then((data) => {
       document.getElementById("outputArea").value =
-        data.output || data.error || "No output";
+        data.output || data.error || data.message || "No output";
     });
 });
 
