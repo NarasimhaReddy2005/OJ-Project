@@ -2,44 +2,46 @@ document.addEventListener("DOMContentLoaded", () => {
   const aiBtn = document.getElementById("ai-review-btn");
   if (!aiBtn) return;
 
-  aiBtn.addEventListener("click", () => {
-    fetch(`/submission/latest/${window.problemId}/`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.error) {
-          alert("Error fetching submission");
-          return;
-        }
+  aiBtn.addEventListener("click", async () => {
+    try {
+      // Fetch latest submission
+      const res = await fetch(`/submission/latest/${window.problemId}/`);
+      const data = await res.json();
 
-        const subId = data.id;
-        return fetch(`/ai/review/${subId}/`);
-      })
-      .then((res) => res.text())
-      .then((html) => {
-        // Inject the HTML into the DOM
-        const wrapper = document.createElement("div");
-        wrapper.innerHTML = html;
-        document.body.appendChild(wrapper);
+      if (data.error) {
+        return;
+      }
 
-        // Add close logic
-        const closeBtn = document.getElementById("ai-popup-close");
-        closeBtn.addEventListener("click", () => {
-          wrapper.remove();
-        });
-        const continueBtn = document.getElementById("ai-continue-btn");
-        if (continueBtn) {
-          const subId = continueBtn.getAttribute("data-submission-id");
-          continueBtn.addEventListener("click", () =>
-            handleContinueClick(subId)
-          );
-        }
-      })
-      .catch((err) => {
-        console.error("Error:", err);
-        alert("Something went wrong");
-      });
+      const subId = data.id;
+
+      // Fetch AI review
+      const reviewRes = await fetch(`/ai/review/${subId}/`);
+      const html = await reviewRes.text();
+
+      // Inject popup into DOM
+      const wrapper = document.createElement("div");
+      wrapper.innerHTML = html;
+      document.body.appendChild(wrapper);
+
+      // Close button logic
+      const closeBtn = document.getElementById("ai-popup-close");
+      if (closeBtn) {
+        closeBtn.addEventListener("click", () => wrapper.remove());
+      }
+
+      // Continue button logic
+      const continueBtn = document.getElementById("ai-continue-btn");
+      if (continueBtn) {
+        const subId = continueBtn.getAttribute("data-submission-id");
+        continueBtn.addEventListener("click", () => handleContinueClick(subId));
+      }
+    } catch (err) {
+      console.error("Error:", err);
+      toastr.error("Something went wrong @ ai.js");
+    }
   });
 });
+
 function handleContinueClick(submissionId) {
   const responseBox = document.getElementById("ai-review-response");
   const content = document.getElementById("ai-review-content");

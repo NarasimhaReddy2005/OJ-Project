@@ -7,7 +7,7 @@ def ai_review_modal(request, problem_id):
     try:
         submission = CodeSubmission.objects.filter(problem_id=problem_id).latest('submitted_at')
     except CodeSubmission.DoesNotExist:
-        return JsonResponse({'error': 'No submissions found'}, status=404)
+        return JsonResponse({'error': 'No submissions done yet'}, status=404)
 
     context = {
         'problem_statement': submission.problem.statement,

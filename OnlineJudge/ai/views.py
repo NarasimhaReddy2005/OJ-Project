@@ -34,7 +34,14 @@ genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
 
 @login_required
 def ai_generate_review(request, submission_id):
-    submission = get_object_or_404(CodeSubmission, id=submission_id)
+    try:
+        submission = CodeSubmission.objects.get(id=submission_id)
+    except CodeSubmission.DoesNotExist:
+        # Return JSON so frontend can show toast
+        return JsonResponse({
+            "success": False,
+            "message": "No submission found here (ai's view)"
+        })
 
     # Only allow AI review for specific verdicts
     if submission.verdict not in ["Wrong Answer", "Accepted"]:
