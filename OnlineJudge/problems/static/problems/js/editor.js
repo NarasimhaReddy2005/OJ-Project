@@ -65,7 +65,7 @@ var myCodeMirror = CodeMirror.fromTextArea(
 myCodeMirror.setSize("100%", "50vh");
 
 // Set initial code content
-if (window.latest_submissions[initialLang].code.length > 0) {
+if (window.latest_submissions[initialLang]?.code?.length > 0) {
   myCodeMirror.setValue(window.latest_submissions[initialLang].code);
 } else {
   myCodeMirror.setValue(boilerplates[initialLang]);
@@ -84,7 +84,6 @@ langSelect.addEventListener("change", function () {
 
   // Only insert boilerplate if user hasn’t typed their own code yet
   if (window.latest_submissions[selectedLang]?.code?.length > 0) {
-    console.log(window.latest_submissions[selectedLang].code);
     myCodeMirror.setValue(window.latest_submissions[selectedLang].code);
   } else {
     myCodeMirror.setValue(boilerplates[selectedLang]);
