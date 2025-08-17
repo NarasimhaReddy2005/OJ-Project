@@ -9,7 +9,7 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from django.core.mail import send_mail
 from django.conf import settings
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.contrib.auth.decorators import login_required
 from .models import UserMetadata
 from submission.models import CodeSubmission
@@ -148,3 +148,46 @@ def user_profile(request):
     }
 
     return render(request, 'auth/profile_view.html', context)
+
+from .models import UserMetadata
+from .forms import UserMetadataForm
+from django.views.decorators.http import require_GET, require_POST
+
+def _get_or_create_metadata(user):
+    # Ensure the user always has a metadata row
+    metadata, _ = UserMetadata.objects.get_or_create(user=user)
+    return metadata
+
+@login_required
+@require_GET
+def metadata_get(request):
+    metadata = _get_or_create_metadata(request.user)
+    data = {
+        'username': request.user.username,
+        'bio': metadata.bio or '',
+        'email': metadata.email or '',
+        'linkedin': metadata.linkedin or '',
+        'profile_picture_url': metadata.profile_picture.url if metadata.profile_picture else '',
+        'date_joined': request.user.date_joined.strftime('%B %d, %Y'),
+    }
+    return JsonResponse({'ok': True, 'data': data})
+
+@login_required
+@require_POST
+def metadata_update(request):
+    metadata = _get_or_create_metadata(request.user)
+    form = UserMetadataForm(request.POST, request.FILES, instance=metadata)
+    if form.is_valid():
+        md = form.save()
+
+        # Build the minimal payload needed to update the visible card
+        payload = {
+            'bio': md.bio or '',
+            'email': md.email or '',
+            'linkedin': md.linkedin or '',
+            'profile_picture_url': md.profile_picture.url if md.profile_picture else '',
+        }
+        return JsonResponse({'ok': True, 'data': payload})
+    else:
+        # Return field errors
+        return JsonResponse({'ok': False, 'errors': form.errors}, status=400)

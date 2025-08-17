@@ -1,0 +1,190 @@
+{% load static %}
+
+<script
+  src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"
+  integrity="sha384-ndDqU0Gzau9qJ1lfW4pNLlhNTkCfHzAVBReH9diLvGRem5+R9g2FzA8ZGN954O5Q"
+  crossorigin="anonymous"
+></script>
+<!-- Profile Card -->
+<link
+  href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
+  rel="stylesheet"
+/>
+<style>
+  /* Force readable text in Bootstrap modal */
+  #editProfileModal,
+  #editProfileModal .modal-content {
+    color: #212529; /* Bootstrap body color */
+  }
+  #editProfileModal .modal-title,
+  #editProfileModal label,
+  #editProfileModal .form-label,
+  #editProfileModal .btn {
+    color: inherit; /* inherit from modal-content */
+  }
+</style>
+<div class="card bg-light mb-4 position-relative">
+  <div class="card-body d-flex align-items-center">
+    <img
+      id="profile-picture"
+      src="{% if metadata.profile_picture %}{{ metadata.profile_picture.url }}{% else %}{% static 'images/default_avatar.png' %}{% endif %}"
+      class="rounded-circle me-4"
+      style="width: 80px; height: 80px; object-fit: cover"
+      alt="Profile Picture"
+    />
+
+    <div class="flex-grow-1">
+      <h4 class="mb-1" id="profile-username">{{ user.username }}</h4>
+
+      {% if metadata.bio or metadata.email or metadata.linkedin %}
+      <p class="mb-0" id="profile-bio">{{ metadata.bio }}</p>
+
+      <small class="text-muted {% if not metadata.email %}d-none{% endif %}">
+        Email: <span id="profile-email">{{ metadata.email }}</span> </small
+      ><br />
+
+      <small class="text-muted {% if not metadata.linkedin %}d-none{% endif %}">
+        LinkedIn:
+        <a
+          id="profile-linkedin"
+          href="{{ metadata.linkedin }}"
+          class="text-info"
+          >{{ metadata.linkedin }}</a
+        >
+      </small>
+      {% else %}
+      <p class="text-muted" id="profile-empty">No profile info available.</p>
+      <p class="mb-0 d-none" id="profile-bio"></p>
+      <small class="text-muted d-none"
+        >Email: <span id="profile-email"></span></small
+      ><br />
+      <small class="text-muted d-none">
+        LinkedIn: <a id="profile-linkedin" href="" class="text-info"></a>
+      </small>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Edit icon (top-right corner) -->
+  <button
+    id="edit-profile-link"
+    class="btn btn-outline-secondary position-absolute top-0 end-0 m-2 p-1"
+    style="border-radius: 50%; width: 36px; height: 36px"
+  >
+    <i class="bi bi-pencil"></i>
+  </button>
+  <div class="text-end" style="padding: 12px">
+    <p class="mb-1">Joined on</p>
+    <h6 id="profile-joined">{{ user.date_joined|date:"F j, Y" }}</h6>
+  </div>
+</div>
+
+<!-- Edit Profile Modal -->
+<div class="modal fade" id="editProfileModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <form
+      id="edit-profile-form"
+      class="modal-content"
+      enctype="multipart/form-data"
+    >
+      <div class="modal-header">
+        <h5 class="modal-title">Edit profile</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label">Bio</label>
+          <textarea
+            name="bio"
+            id="form-bio"
+            class="form-control"
+            rows="3"
+          ></textarea>
+          <div class="invalid-feedback" id="error-bio"></div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Email</label>
+          <input
+            type="email"
+            name="email"
+            id="form-email"
+            class="form-control"
+          />
+          <div class="invalid-feedback" id="error-email"></div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">LinkedIn URL</label>
+          <input
+            type="url"
+            name="linkedin"
+            id="form-linkedin"
+            class="form-control"
+          />
+          <div class="invalid-feedback" id="error-linkedin"></div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Profile picture</label>
+          <input
+            type="file"
+            name="profile_picture"
+            id="form-profile-picture"
+            class="form-control"
+            accept="image/*"
+          />
+          <div class="invalid-feedback" id="error-profile_picture"></div>
+
+          <div class="mt-2">
+            <img
+              id="form-preview"
+              src=""
+              alt=""
+              style="
+                max-height: 80px;
+                display: none;
+                object-fit: cover;
+                border-radius: 6px;
+              "
+            />
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="btn btn-outline-secondary"
+          data-bs-dismiss="modal"
+        >
+          Cancel
+        </button>
+        <button type="submit" class="btn btn-primary">
+          <span class="save-text">Save</span>
+          <span
+            class="spinner-border spinner-border-sm d-none"
+            role="status"
+            aria-hidden="true"
+          ></span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  window.PROFILE_ENDPOINTS = {
+    get: "{% url 'metadata_get' %}",
+    update: "{% url 'metadata_update' %}",
+  };
+</script>
+{% block scripts %}
+<script src="{% static 'accounts/js/profile_modal.js' %}"></script>
+{% endblock %}
