@@ -97,10 +97,10 @@
   const chart = new Chart(ctx, {
     type: 'bar',
     data: {
-      labels: {{ activity_labels|safe }},
+      labels: `{{ activity_labels|safe }}`,
       datasets: [{
         label: 'Submissions',
-        data: {{ activity_counts|safe }},
+        data: `{{ activity_counts|safe }}`,
         backgroundColor: '#38bdf8'
       }]
     },
