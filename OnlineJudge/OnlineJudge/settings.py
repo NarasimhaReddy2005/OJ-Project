@@ -25,18 +25,17 @@ SECRET_KEY = 'django-insecure-e#-+2hdw_2i4)92lesp1m-8(%ihm9@m8ukx(^o7b$)i!a%uzky
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["bytebenchapp-v1-0.onrender.com", 
-                 "bytebenchapp-v2-0.onrender.com", 
-                 "bytebenchapp-v2-1.onrender.com", 
-                 "bytebenchapp-v2-2.onrender.com", 
+ALLOWED_HOSTS = [".onrender.com", 
                  "localhost", 
                  "127.0.0.1"
                  ]
-CSRF_TRUSTED_ORIGINS = ['https://bytebenchapp-v2-0.onrender.com', 
-                        'https://bytebenchapp-v1-0.onrender.com', 
-                        'https://bytebenchapp-v2-1.onrender.com', 
-                        'https://bytebenchapp-v2-2.onrender.com'
-                        ]
+CSRF_TRUSTED_ORIGINS = [
+"https://*.onrender.com",
+"http://localhost",
+"http://127.0.0.1",
+"https://localhost",
+"https://127.0.0.1",
+]
 
 # Application definition
 

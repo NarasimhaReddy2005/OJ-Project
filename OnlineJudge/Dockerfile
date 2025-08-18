@@ -6,7 +6,7 @@ WORKDIR /OJ
 # Install system dependencies in one layer & clean up
 RUN apt-get update && apt-get install -y \
     g++ \
-    openjdk-17-jdk \
+    default-jdk \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy only requirements first for caching
