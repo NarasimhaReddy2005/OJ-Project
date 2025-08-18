@@ -1,6 +1,24 @@
 {% extends 'base1.html' %} {% block content %} {% load static %}
 <link rel="stylesheet" href="{% static 'ai/css/ai_popup.css' %}" />
 <link rel="stylesheet" href="{% static 'problems/css/problem_detail.css' %}" />
+<script src="https://unpkg.com/codemirror@5.65.20/addon/scroll/simplescrollbars.js"></script>
+<link
+  rel="stylesheet"
+  href="https://unpkg.com/codemirror@5.65.20/addon/scroll/simplescrollbars.css"
+/>
+<style>
+  /* vertical scrollbar thumb */
+  .CodeMirror-simplescroll-vertical div {
+    background: #ffffff; /* your color */
+    border-radius: 4px; /* rounded */
+    width: 6px; /* width of the thumb */
+  }
+
+  /* scrollbar track background */
+  .CodeMirror-simplescroll-vertical {
+    background: #263238; /* track color */
+  }
+</style>
 <div class="problem-container">
   <div class="problem-left">
     <h2>{{ problem.problem_name }}</h2>

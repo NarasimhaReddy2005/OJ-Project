@@ -131,7 +131,7 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
-    BASE_DIR / "static"
+    BASE_DIR / "OnlineJudge" / "static"
 ]
 
 # Default primary key field type
@@ -142,3 +142,5 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_URL = '/auth/login/'
 LOGIN_REDIRECT_URL = '/'
 
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"

@@ -21,6 +21,8 @@ import calendar
 
 # Register view
 def register_view(request):
+    if request.user.is_authenticated:
+        return redirect('/')
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
         if form.is_valid():
@@ -32,6 +34,9 @@ def register_view(request):
 
 # Login view
 def login_view(request):
+    if request.user.is_authenticated:
+        return redirect('/')
+
     if request.method == 'POST':
         form = AuthenticationForm(data=request.POST)
         if form.is_valid():
@@ -191,3 +196,4 @@ def metadata_update(request):
     else:
         # Return field errors
         return JsonResponse({'ok': False, 'errors': form.errors}, status=400)
+        

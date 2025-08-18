@@ -59,7 +59,9 @@ var myCodeMirror = CodeMirror.fromTextArea(
     autoCloseBrackets: true,
     indentUnit: 4,
     tabSize: 4,
-    indentWithTabs: false,
+    indentWithTabs: true,
+    lineWrapping: true,
+    scrollbarStyle: "simple",
   }
 );
 myCodeMirror.setSize("100%", "50vh");

@@ -14,6 +14,7 @@
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   overflow-y: auto;
+  min-width: 40vh;
 }
 
 .problem-right {
@@ -24,7 +25,14 @@
   padding: 10px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   height: 100%;
-  color: wheat;
+  color: rgb(222, 217, 208);
+}
+
+.CodeMirror {
+  font-family: "JetBrains Mono", "Fira Code", Consolas, monospace;
+  font-size: 14px;
+  background-color: white;
+  border-radius: 6px;
 }
 
 .editor-section {
@@ -50,6 +58,24 @@
   justify-content: flex-end;
   gap: 9px;
   margin-top: 5px;
+}
+
+/* vertical scrollbar thumb */
+.CodeMirror-simplescroll-vertical div {
+  background: #4cafef; /* your color */
+  border-radius: 6px; /* rounded */
+}
+
+/* horizontal scrollbar thumb */
+.CodeMirror-simplescroll-horizontal div {
+  background: #4cafef;
+  border-radius: 6px;
+}
+
+/* scrollbar track background */
+.CodeMirror-simplescroll-horizontal,
+.CodeMirror-simplescroll-vertical {
+  background: #1e1e1e; /* track color */
 }
 
 .run-btn,
@@ -110,12 +136,7 @@
   font-size: 14px;
   color: black;
 }
-.CodeMirror {
-  font-family: "JetBrains Mono", "Fira Code", Consolas, monospace;
-  font-size: 14px;
-  background-color: white;
-  border-radius: 6px;
-}
+
 #ai-review-btn {
   display: inline-block;
   width: 150px;
